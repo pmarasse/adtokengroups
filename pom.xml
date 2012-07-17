@@ -1,0 +1,139 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.archigny.utils</groupId>
+    <artifactId>adtokengroups</artifactId>
+    <version>0.1.0</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <persondir.version>1.5.0</persondir.version>
+        <springldap.version>1.3.1.RELEASE</springldap.version>
+        <slf4j.log4j12.version>1.6.4</slf4j.log4j12.version>
+        <springframework.version>3.1.1.RELEASE</springframework.version>
+        <ehcache.version>2.5.2</ehcache.version>
+        
+        <junit.version>4.10</junit.version>
+        <commons.codec.version>1.6</commons.codec.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+            <version>${springldap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core-tiger</artifactId>
+            <version>${springldap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.log4j12.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache-core</artifactId>
+            <version>${ehcache.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+        </plugins>
+        <extensions>
+
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.2</version>
+            </extension>
+        </extensions>
+    </build>
+    
+    <distributionManagement>
+    
+        <repository>
+            <id>orthanc-released</id>
+            <name>Dépôt local releases</name>
+            <url>scp://orthanc.archigny.net/data/orthanc/maven2/released</url>
+        </repository>
+        
+        <snapshotRepository>
+            <id>orthanc-snapshots</id>
+            <name>Dépôt local snapshots</name>
+            <url>scp://orthanc.archigny.net/data/orthanc/maven2/snapshots</url>
+        </snapshotRepository>
+
+<!--         <snapshotRepository>
+            <id>local-snapshot</id>
+            <name>Dépôt local snapshots</name>
+            <url>file:///tmp/maven2/snapshot</url>
+            <uniqueVersion>true</uniqueVersion>
+        </snapshotRepository>  -->
+        
+    </distributionManagement>
+    
+    <repositories>
+        <repository>
+            <id>spring-release</id>
+            <url>http://maven.springframework.org/release</url>
+        </repository>
+    </repositories>
+
+
+</project>
