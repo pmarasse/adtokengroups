@@ -13,8 +13,8 @@ import net.sf.ehcache.store.Policy;
 
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
-    
+    private final Logger       log          = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
+
     /**
      * Cache name used by all instances of Registry
      */
@@ -69,9 +69,13 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         super.afterPropertiesSet();
 
         CacheManager cm = CacheManager.getInstance();
-        cache = new Cache(CACHE_NAME, maxElements, false, false, timeToLive, timeToIdle);
-        cm.addCache(cache);
-        cache.setMemoryStoreEvictionPolicy(policy);
+        if ((cache = cm.getCache(CACHE_NAME)) == null) {
+            cache = new Cache(CACHE_NAME, maxElements, false, false, timeToLive, timeToIdle);
+            cm.addCache(cache);
+            cache.setMemoryStoreEvictionPolicy(policy);
+        } else {
+            log.info("using existing cache instance - ignoring parameters maxElements, timeToLive, timeToIdle");
+        }
     }
 
     /**
@@ -83,7 +87,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         CacheManager cm = CacheManager.getInstance();
         cm.removeCache(CACHE_NAME);
         String[] cacheNames = cm.getCacheNames();
-        
+
         // Shutdown cache manager if no other cache is registered
         if (cacheNames.length == 0) {
             cm.shutdown();
@@ -100,33 +104,34 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     public String getDnFromToken(byte[] tokenGroup) {
 
         String sid;
-        
+
         try {
             sid = LdapUtils.convertBinarySidToString(tokenGroup);
         } catch (Exception e) {
-            LOG.error("An invalid SID has been passed as tokenGroup : " + toHexString(tokenGroup));
+            log.error("An invalid SID has been passed as tokenGroup : " + toHexString(tokenGroup));
             // non parseable SID => will not attempt to contact LDAP directory
             return null;
         }
-        
+
         // Cache lookup
-        Element cachedElement; 
+        Element cachedElement;
         if ((cachedElement = cache.get(sid)) != null) {
             return (String) cachedElement.getObjectValue();
         }
-        
+
         // Cache miss
         String groupDN = super.getDnFromToken(tokenGroup);
-        
+
         if (groupDN != null) {
             cache.put(new Element(sid, groupDN));
         }
-        
+
         return groupDN;
-        
+
     }
-    
+
     private final String toHexString(byte[] bytes) {
+
         StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) {
             sb.append(String.format("%02x", b));
@@ -176,9 +181,8 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         this.timeToIdle = timeToIdle;
     }
 
-    
     public Cache getCache() {
-    
+
         return cache;
     }
 

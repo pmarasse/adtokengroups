@@ -7,8 +7,11 @@
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %m%n" />
         </layout>
     </appender>
-    <root>
+        <logger name="org.springframework.ldap.core.LdapTemplate">
         <level value="INFO" />
+    </logger>    
+    <root>
+        <level value="DEBUG" />
         <appender-ref ref="DefaultLog" />
     </root>
 </log4j:configuration>

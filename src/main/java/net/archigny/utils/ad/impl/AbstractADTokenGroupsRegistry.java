@@ -14,7 +14,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     /**
      * logger for this class
      */
-    private static Logger LOG = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
+    private final Logger log = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
 
     /**
      * LDAP context source
@@ -31,8 +31,8 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Validating bean values");
+        if (log.isDebugEnabled()) {
+            log.debug("Validating bean values");
         }
         if (cs == null) {
             throw new BeanCreationException("LDAP ContextSource cannot be null");
@@ -40,8 +40,8 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
         if (groupBaseDN == null) {
             throw new BeanCreationException("Group Base DN cannot be null");
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Validated with group search base : " + groupBaseDN);
+        if (log.isDebugEnabled()) {
+            log.debug("Validated with group search base : " + groupBaseDN);
         }
         ldapTemplate = new LdapTemplate(cs);
         ldapTemplate.setIgnorePartialResultException(true);

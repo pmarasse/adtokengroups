@@ -24,8 +24,8 @@ import org.springframework.ldap.support.LdapUtils;
  */
 public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
-    private final static Logger LOG = LoggerFactory.getLogger(SimpleADTokenGroupsRegistry.class);
-    
+    private final Logger            log               = LoggerFactory.getLogger(SimpleADTokenGroupsRegistry.class);
+
     protected final static Pattern  QUERY_PLACEHOLDER = Pattern.compile("\\{0\\}");
 
     protected final static String   QUERY_SID         = "(objectSid={0})";
@@ -53,7 +53,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
         Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
 
         String localFilter = queryMatcher.replaceAll(Matcher.quoteReplacement(escapeOctetString(tokenGroup)));
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             String sid = "";
             // sid String transform can raise an index out of bounds exception
             try {
@@ -61,7 +61,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             } catch (Exception e) {
 
             }
-            LOG.debug("Querying directory with filter : " + localFilter + " (resolve SID: " + sid + ")");
+            log.debug("Querying directory with filter : " + localFilter + " (resolve SID: " + sid + ")");
         }
 
         SearchControls sc = new SearchControls();
@@ -97,8 +97,8 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
         public Object mapFromContext(Object ctx) {
 
             DirContextAdapter context = (DirContextAdapter) ctx;
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Attributes returned by context : " + context.getAttributes().toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Attributes returned by context : " + context.getAttributes().toString());
             }
 
             DistinguishedName dn = (DistinguishedName) cs.getBaseLdapPath().clone();

@@ -24,7 +24,7 @@ public class CachingADTokenGroupsRegistryTest {
 
     public final static String      BIND_DN      = "cn=Application Test,ou=Applications,ou=Utilisateurs,dc=in,dc=archigny,dc=org";
 
-    public final static String      BIND_PW      = "cactus";
+    public final static String      BIND_PW      = "123456";
 
     public final static String      SERVER_URL   = "ldap://win2k8.in.archigny.org";
 
@@ -170,4 +170,28 @@ public class CachingADTokenGroupsRegistryTest {
             fail("Unexpected InvalidNameException thrown");
         }
     }
+    
+    @Test
+    public void DualRegistrySharedCache() throws Exception {
+        // Test that fails on version 0.1.0
+        
+        CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setMaxElements(3);
+        tokenRegistry.setTimeToLive(1); // 1 seconde.
+        tokenRegistry.setContextSource(cs);
+        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.afterPropertiesSet();
+        Cache cache = tokenRegistry.getCache();
+        cache.setStatisticsEnabled(true);
+
+        @SuppressWarnings("unused")
+        CachingADTokenGroupsRegistry tokenRegistry2 = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setMaxElements(3);
+        tokenRegistry.setTimeToLive(1); // 1 seconde.
+        tokenRegistry.setContextSource(cs);
+        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.afterPropertiesSet();
+        
+    }
+    
 }

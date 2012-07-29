@@ -21,7 +21,7 @@ public class SimpleADTokenGroupsRegistryTest {
 
     public final static String      BIND_DN      = "cn=Application Test,ou=Applications,ou=Utilisateurs,dc=in,dc=archigny,dc=org";
 
-    public final static String      BIND_PW      = "cactus";
+    public final static String      BIND_PW      = "123456";
 
     public final static String      SERVER_URL   = "ldap://win2k8.in.archigny.org";
 
