@@ -31,7 +31,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     protected final static String   QUERY_SID         = "(objectSid={0})";
 
     protected final static String[] QUERY_ATTRS       = { "cn" };
-
+    
     protected final String escapeOctetString(byte[] octetString) {
 
         StringBuilder sb = new StringBuilder(octetString.length * 3);
@@ -85,7 +85,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             return null;
         }
     }
-
+    
     /**
      * A simple ContextMapper to only fetch DN of result objects.
      * 
@@ -101,7 +101,11 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
                 log.debug("Attributes returned by context : " + context.getAttributes().toString());
             }
 
-            DistinguishedName dn = (DistinguishedName) cs.getBaseLdapPath().clone();
+            if (contextSourceBaseDN == null) {
+            	return context.getDn().toString();
+            }
+            
+            DistinguishedName dn = new DistinguishedName(contextSourceBaseDN);
 
             if (dn.isEmpty()) {
                 return context.getDn().toString();
