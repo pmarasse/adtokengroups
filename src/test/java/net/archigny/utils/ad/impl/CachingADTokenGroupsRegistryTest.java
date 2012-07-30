@@ -76,7 +76,7 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setContextSource(cs);
-        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.setContextSourceBaseDN(BASE_DN);
         tokenRegistry.afterPropertiesSet();
         Cache cache = tokenRegistry.getCache();
         cache.setStatisticsEnabled(true);

@@ -71,7 +71,7 @@ public class SimpleADTokenGroupsRegistryTest {
 
         SimpleADTokenGroupsRegistry tokenRegistry = new SimpleADTokenGroupsRegistry();
         tokenRegistry.setContextSource(cs);
-        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.setContextSourceBaseDN(BASE_DN);
         tokenRegistry.afterPropertiesSet();
 
         try {
@@ -120,4 +120,25 @@ public class SimpleADTokenGroupsRegistryTest {
         }
     }
 
+    @Test
+    public void getDNFromTokenTestWithNoBase() throws Exception {
+
+        // Verifie l'incohérence si l'on indique une DN de base dans la ContextSource mais pas ici.
+        SimpleADTokenGroupsRegistry tokenRegistry = new SimpleADTokenGroupsRegistry();
+        tokenRegistry.setContextSource(cs);
+        tokenRegistry.afterPropertiesSet();
+
+        LdapName base = new LdapName(BASE_DN);
+        
+        log.debug("Resolving token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
+        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        log.debug("Found group DN : " + group1DN);
+        LdapName name1 = new LdapName(group1DN);
+
+        // Vérifie que le nom du groupe 1 ne possède pas le suffixe de base.
+        assertTrue(name1.equals( (new LdapName(GROUP_1_NAME)).getSuffix(base.size()) ));        
+        
+    }
+
+    
 }
