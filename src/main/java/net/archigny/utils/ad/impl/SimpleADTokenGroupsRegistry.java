@@ -71,7 +71,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
         try {
             @SuppressWarnings("unchecked")
-            List<String> groupDNs = ldapTemplate.search(groupBaseDN, localFilter, sc, new DnFetcher());
+            List<String> groupDNs = ldapTemplate.search(baseDN, localFilter, sc, new DnFetcher());
 
             if (groupDNs.isEmpty()) {
                 return null;

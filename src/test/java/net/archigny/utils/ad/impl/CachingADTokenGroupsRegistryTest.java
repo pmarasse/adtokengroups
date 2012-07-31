@@ -179,7 +179,7 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setContextSource(cs);
-        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.setBaseDN("");
         tokenRegistry.afterPropertiesSet();
         Cache cache = tokenRegistry.getCache();
         cache.setStatisticsEnabled(true);
@@ -189,7 +189,7 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setContextSource(cs);
-        tokenRegistry.setGroupBaseDN("");
+        tokenRegistry.setBaseDN("");
         tokenRegistry.afterPropertiesSet();
         
     }

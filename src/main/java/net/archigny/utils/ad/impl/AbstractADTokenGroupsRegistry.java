@@ -27,7 +27,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     /**
      * Base DN when looking for groups (relative to baseDN provided to contextSource)
      */
-    protected String        groupBaseDN = "";
+    protected String        baseDN = "";
 
     /**
      * baseDN provided to contextSource (as it is impossible to determine it by querying contextSource)
@@ -46,7 +46,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
             throw new BeanCreationException("LDAP ContextSource cannot be null");
         }
         if (log.isDebugEnabled()) {
-            log.debug("Validated with group search base : " + groupBaseDN);
+            log.debug("Validated with group search base : " + baseDN);
         }
         ldapTemplate = new LdapTemplate(cs);
         ldapTemplate.setIgnorePartialResultException(true);
@@ -68,16 +68,16 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     }
 
     @Override
-    public void setGroupBaseDN(String groupBaseDN) {
+    public void setBaseDN(String baseDN) {
 
-        this.groupBaseDN = groupBaseDN;
+        this.baseDN = baseDN;
 
     }
 
     @Override
-    public String getGroupBaseDN() {
+    public String getBaseDN() {
 
-        return groupBaseDN;
+        return baseDN;
     }
     
     // Wrapper getter around LdapName

@@ -10,19 +10,29 @@ public interface IActiveDirectoryTokenGroupsRegistry {
     /**
      * Set the group base DN for querying groups eg: cn=Groups,dc=mydomain,dc=net
      * 
-     * @param groupBaseDN
+     * @param baseDN
      */
-    public void setGroupBaseDN(String groupBaseDN);
+    public void setBaseDN(String baseDN);
 
     /**
      * Getter for group searching base DN
      * 
      * @return actual base DN (group searching)
      */
-    public String getGroupBaseDN();
+    public String getBaseDN();
     
+    /**
+     * Resolve a string represented binary SID to its Distinguished Name
+     *
+     * @param tokenGroup String representation that will be converted to byte[]
+     */
     public String getDnFromToken(String tokenGroup);
     
+    /**
+     * Resolve a binary SID to its Distinguished Name
+     *
+     * @param tokenGroup byte array representing the SID in binary format (fetched from AD)
+     */
     public String getDnFromToken(byte[] tokenGroup);
     
 }
