@@ -208,7 +208,7 @@ public class CachingADTokenGroupsRegistryTest {
         cache.setStatisticsEnabled(true);
 
         Thread.sleep(2000);
-        
+
         // Cache Miss
         log.info("Resolving first token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
         long now = System.currentTimeMillis();
@@ -219,14 +219,14 @@ public class CachingADTokenGroupsRegistryTest {
         assertNull(group1DN);
 
         long hits = cache.getStatistics().getInMemoryHits();
-        
+
         now = System.currentTimeMillis();
         group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
         now2 = System.currentTimeMillis();
         log.info("Querying (cached) group DN time : " + (now2 - now) + " ms)");
 
         assertEquals(1, cache.getStatistics().getInMemoryHits() - hits);
-        
+
     }
 
 }

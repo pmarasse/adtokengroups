@@ -122,7 +122,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         // Cache lookup
         Element cachedElement;
         if ((cachedElement = cache.get(sid)) != null) {
-                // Cache Hit
+        	// Cache Hit
             return (String) cachedElement.getObjectValue();
         }
 
