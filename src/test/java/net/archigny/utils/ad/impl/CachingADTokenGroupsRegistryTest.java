@@ -142,13 +142,12 @@ public class CachingADTokenGroupsRegistryTest {
             Statistics stats = cache.getStatistics();
             log.info("Hits : " + stats.getCacheHits() + " / Miss : " + stats.getCacheMisses() + " / objets en cache : "
                     + stats.getObjectCount() + " / evictions du cache : " + stats.getEvictionCount());
-            
 
             assertEquals(1, stats.getCacheHits());
             assertEquals(5, stats.getCacheMisses());
             assertEquals(3, stats.getObjectCount());
             assertEquals(2, stats.getEvictionCount());
-            
+
             log.info("Waiting more than timeToIdle");
             Thread.sleep(900);
             // Cache Hit
@@ -156,7 +155,7 @@ public class CachingADTokenGroupsRegistryTest {
             Thread.sleep(900);
             // Cache Miss (TTL = 1s)
             dummy = tokenRegistry.getDnFromToken(TOKEN_1);
-            
+
             stats = cache.getStatistics();
             log.info("Hits : " + stats.getCacheHits() + " / Miss : " + stats.getCacheMisses() + " / objets en cache : "
                     + stats.getObjectCount() + " / evictions du cache : " + stats.getEvictionCount());
@@ -170,11 +169,12 @@ public class CachingADTokenGroupsRegistryTest {
             fail("Unexpected InvalidNameException thrown");
         }
     }
-    
+
     @Test
     public void DualRegistrySharedCache() throws Exception {
+
         // Test that fails on version 0.1.0
-        
+
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
@@ -191,7 +191,42 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setContextSource(cs);
         tokenRegistry.setBaseDN("");
         tokenRegistry.afterPropertiesSet();
+
+    }
+
+    @Test
+    public void cacheNullTest() throws Exception {
+
+        CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setMaxElements(3);
+        tokenRegistry.setTimeToLive(1); // 1 seconde.
+        tokenRegistry.setContextSource(cs);
+        tokenRegistry.setBaseDN("ou=Utilisateurs");
+        tokenRegistry.afterPropertiesSet();
+        tokenRegistry.setCacheNullValues(true);
+        Cache cache = tokenRegistry.getCache();
+        cache.setStatisticsEnabled(true);
+
+        Thread.sleep(2000);
+        
+        // Cache Miss
+        log.info("Resolving first token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
+        long now = System.currentTimeMillis();
+        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        long now2 = System.currentTimeMillis();
+        log.info("Querying group DN time : " + (now2 - now) + " ms)");
+
+        assertNull(group1DN);
+
+        long hits = cache.getStatistics().getInMemoryHits();
+        
+        now = System.currentTimeMillis();
+        group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        now2 = System.currentTimeMillis();
+        log.info("Querying (cached) group DN time : " + (now2 - now) + " ms)");
+
+        assertEquals(1, cache.getStatistics().getInMemoryHits() - hits);
         
     }
-    
+
 }

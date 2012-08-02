@@ -59,6 +59,12 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
      * Time to Idle for elements (maximum seconds between accesses)
      */
     private long               timeToIdle   = DEFAULT_TTI;
+    
+    /**
+     * True if it's allowed to cache null group value (useful if search base is not the base of AD forest in order to avoid 
+     * hitting AD with unnecessary requests)
+     */
+    private boolean cacheNullValues = false;
 
     /**
      * Method called to initialize the bean
@@ -116,13 +122,14 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         // Cache lookup
         Element cachedElement;
         if ((cachedElement = cache.get(sid)) != null) {
+                // Cache Hit
             return (String) cachedElement.getObjectValue();
         }
 
-        // Cache miss
+        // Cache Miss
         String groupDN = super.getDnFromToken(tokenGroup);
 
-        if (groupDN != null) {
+        if ((groupDN != null) || (cacheNullValues)) {
             cache.put(new Element(sid, groupDN));
         }
 
@@ -184,6 +191,16 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     public Cache getCache() {
 
         return cache;
+    }
+
+    public void setCacheNullValues(boolean cacheNullValues) {
+
+        this.cacheNullValues = cacheNullValues;
+    }
+
+    public boolean isCacheNullValues() {
+
+        return cacheNullValues;
     }
 
 }
