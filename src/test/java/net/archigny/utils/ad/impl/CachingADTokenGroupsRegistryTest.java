@@ -194,4 +194,32 @@ public class CachingADTokenGroupsRegistryTest {
         
     }
     
+    @Test
+    public void cacheNullTest() throws Exception {
+
+    	CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setMaxElements(3);
+        tokenRegistry.setTimeToLive(1); // 1 seconde.
+        tokenRegistry.setContextSource(cs);
+        tokenRegistry.setGroupBaseDN("ou=Utilisateurs");
+        tokenRegistry.afterPropertiesSet();
+        Cache cache = tokenRegistry.getCache();
+        cache.setStatisticsEnabled(true);
+    	
+            // Cache Miss
+            log.info("Resolving first token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
+            long now = System.currentTimeMillis();
+            String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+            long now2 = System.currentTimeMillis();
+            log.info("Querying group DN time : " + (now2 - now) + " ms)");
+
+            assertNull(group1DN);
+            
+            now = System.currentTimeMillis();
+            group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+            now2 = System.currentTimeMillis();
+            log.info("Querying (cached) group DN time : " + (now2 - now) + " ms)");
+        
+    }
+    
 }
