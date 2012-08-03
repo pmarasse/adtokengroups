@@ -7,6 +7,7 @@ import javax.naming.ldap.LdapName;
 
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Statistics;
 
 import org.apache.commons.codec.binary.Base64;
@@ -171,6 +172,9 @@ public class CachingADTokenGroupsRegistryTest {
         } catch (InvalidNameException e) {
             fail("Unexpected InvalidNameException thrown");
         }
+        
+        CacheManager cm = CacheManager.getInstance();
+        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
     }
 
     @Test
@@ -230,6 +234,9 @@ public class CachingADTokenGroupsRegistryTest {
 
         assertEquals(1, cache.getStatistics().getInMemoryHits() - hits);
 
+        CacheManager cm = CacheManager.getInstance();
+        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
+
     }
 
     @Test
@@ -246,7 +253,10 @@ public class CachingADTokenGroupsRegistryTest {
         LdapName name2 = new LdapName(group2DN);
 
         assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
-        
+
+        CacheManager cm = CacheManager.getInstance();
+        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
+
     }
     
 }

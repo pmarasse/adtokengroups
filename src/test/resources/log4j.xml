@@ -7,7 +7,7 @@
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %m%n" />
         </layout>
     </appender>
-        <logger name="org.springframework.ldap.core.LdapTemplate">
+        <logger name="org.springframework">
         <level value="INFO" />
     </logger>    
     <root>
