@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 
+import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Statistics;
 
@@ -13,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.support.LdapUtils;
 
@@ -229,4 +232,21 @@ public class CachingADTokenGroupsRegistryTest {
 
     }
 
+    @Test
+    public void springBeanTest() throws InvalidNameException {
+        
+        ApplicationContext testApp = new ClassPathXmlApplicationContext("app-test.xml");
+        IActiveDirectoryTokenGroupsRegistry tokenRegistry = (IActiveDirectoryTokenGroupsRegistry) testApp.getBean("tokenGroupsRegistry");
+        assertNotNull(tokenRegistry);
+        
+        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        assertNull(group1DN);
+        
+        String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
+        LdapName name2 = new LdapName(group2DN);
+
+        assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
+        
+    }
+    
 }

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Bean de pool de connexion annuaire LDAP -->
+    <bean id="searchContextSource" class="org.springframework.ldap.pool.factory.PoolingContextSource" 
+        p:contextSource-ref="targetContextSource"
+        p:dirContextValidator-ref="dirContextValidator" 
+        p:testWhileIdle="true" 
+        p:maxActive="10" 
+        p:maxIdle="5"
+        p:minIdle="2" 
+        p:minEvictableIdleTimeMillis="60000" 
+        p:timeBetweenEvictionRunsMillis="30000"
+        p:numTestsPerEvictionRun="3" />
+
+    <!-- Bean qui sert à valider les connexions utile uniquement si test(OnBorrow|WhileIdle|OnReturn) est à true -->
+    <bean id="dirContextValidator" class="org.springframework.ldap.pool.validation.DefaultDirContextValidator" />
+
+    <!-- Source unitaire de connexion à l'annuaire, gérée par le pool spring -->
+    <!-- le pool est géré par le bean searchContextSource, donc pooled=false ici -->
+    <bean id="targetContextSource" class="org.springframework.ldap.core.support.LdapContextSource" 
+        p:pooled="false" 
+        p:userDn="cn=Application Test,ou=Applications,ou=Utilisateurs,dc=in,dc=archigny,dc=org"
+        p:password="123456" 
+        p:url="ldap://win2k8.in.archigny.org/">
+
+        <property name="baseEnvironmentProperties">
+            <map>
+                <entry key="com.sun.jndi.ldap.connect.timeout" value="250" />
+                <entry key="com.sun.jndi.ldap.read.timeout" value="2500" />
+                <entry key="java.naming.security.authentication" value="simple" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="tokenGroupsRegistry" class="net.archigny.utils.ad.impl.CachingADTokenGroupsRegistry"
+        p:baseDN="ou=Groupes,dc=in,dc=archigny,dc=org"
+        p:cacheNullValues="true"
+        p:contextSource-ref="searchContextSource"
+        p:maxElements="10"
+        p:timeToLive="86400"
+        p:timeToIdle="36000" />
+
+</beans>
