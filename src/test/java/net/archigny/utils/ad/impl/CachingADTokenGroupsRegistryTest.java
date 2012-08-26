@@ -236,7 +236,7 @@ public class CachingADTokenGroupsRegistryTest {
 
         CacheManager cm = CacheManager.getInstance();
         cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
-
+        cm.shutdown();
     }
 
     @Test
@@ -256,7 +256,25 @@ public class CachingADTokenGroupsRegistryTest {
 
         CacheManager cm = CacheManager.getInstance();
         cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
+        cm.shutdown();
 
+    }
+    
+    @Test
+    public void springCacheFactory() throws InvalidNameException {
+        
+        ApplicationContext testApp = new ClassPathXmlApplicationContext("app-test-factory.xml");
+        IActiveDirectoryTokenGroupsRegistry tokenRegistry = (IActiveDirectoryTokenGroupsRegistry) testApp.getBean("tokenGroupsRegistry");
+        assertNotNull(tokenRegistry);
+        
+        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        assertNull(group1DN);
+        
+        String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
+        LdapName name2 = new LdapName(group2DN);
+
+        assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
+        
     }
     
 }

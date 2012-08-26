@@ -13,27 +13,27 @@ import net.sf.ehcache.store.Policy;
 
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
 
-    private final Logger       log          = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
+    private final Logger       log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
 
     /**
      * Cache name used by all instances of Registry
      */
-    public static final String CACHE_NAME   = "ehcache-ad-token-groups-registry";
+    public static final String CACHE_NAME      = "ehcache-ad-token-groups-registry";
 
     /**
      * Default value for in-memory storage
      */
-    public static final int    MAX_ELEMENTS = 100;
+    public static final int    MAX_ELEMENTS    = 100;
 
     /**
      * Default time to live for elements : 86400s => 1 day
      */
-    public static final long   DEFAULT_TTL  = 86400;
+    public static final long   DEFAULT_TTL     = 86400;
 
     /**
      * Default time to idle (maximum time between hits) for elements : 43200 => 12 hours
      */
-    public static final long   DEFAULT_TTI  = 43200;
+    public static final long   DEFAULT_TTI     = 43200;
 
     /**
      * EhCache cache
@@ -43,28 +43,28 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     /**
      * Number of cached elements
      */
-    private int                maxElements  = MAX_ELEMENTS;
+    private int                maxElements     = MAX_ELEMENTS;
 
     /**
      * Cache Eviction Policy (default : LFU)
      */
-    private Policy             policy       = new LfuPolicy();
+    private Policy             policy          = new LfuPolicy();
 
     /**
      * Time to live for elements (seconds)
      */
-    private long               timeToLive   = DEFAULT_TTL;
+    private long               timeToLive      = DEFAULT_TTL;
 
     /**
      * Time to Idle for elements (maximum seconds between accesses)
      */
-    private long               timeToIdle   = DEFAULT_TTI;
-    
+    private long               timeToIdle      = DEFAULT_TTI;
+
     /**
-     * True if it's allowed to cache null group value (useful if search base is not the base of AD forest in order to avoid 
-     * hitting AD with unnecessary requests)
+     * True if it's allowed to cache null group value (useful if search base is not the base of AD forest in order to avoid hitting
+     * AD with unnecessary requests)
      */
-    private boolean cacheNullValues = false;
+    private boolean            cacheNullValues = false;
 
     /**
      * Method called to initialize the bean
@@ -74,13 +74,17 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
 
         super.afterPropertiesSet();
 
-        CacheManager cm = CacheManager.getInstance();
-        if ((cache = cm.getCache(CACHE_NAME)) == null) {
-            cache = new Cache(CACHE_NAME, maxElements, false, false, timeToLive, timeToIdle);
-            cm.addCache(cache);
-            cache.setMemoryStoreEvictionPolicy(policy);
-        } else {
-            log.info("using existing cache instance - ignoring parameters maxElements, timeToLive, timeToIdle");
+        if (cache == null) {
+            log.info("Cache not provided, trying to get one.");
+
+            CacheManager cm = CacheManager.getInstance();
+            if ((cache = cm.getCache(CACHE_NAME)) == null) {
+                cache = new Cache(CACHE_NAME, maxElements, false, false, timeToLive, timeToIdle);
+                cm.addCache(cache);
+                cache.setMemoryStoreEvictionPolicy(policy);
+            } else {
+                log.info("using existing cache instance - ignoring parameters maxElements, timeToLive, timeToIdle");
+            }
         }
     }
 
@@ -122,7 +126,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         // Cache lookup
         Element cachedElement;
         if ((cachedElement = cache.get(sid)) != null) {
-        	// Cache Hit
+            // Cache Hit
             return (String) cachedElement.getObjectValue();
         }
 
@@ -191,6 +195,11 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     public Cache getCache() {
 
         return cache;
+    }
+
+    public void setCache(Cache cache) {
+
+        this.cache = cache;
     }
 
     public void setCacheNullValues(boolean cacheNullValues) {
