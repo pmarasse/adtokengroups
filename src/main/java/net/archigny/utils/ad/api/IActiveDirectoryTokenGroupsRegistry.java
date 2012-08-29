@@ -12,7 +12,7 @@ public interface IActiveDirectoryTokenGroupsRegistry {
      * 
      * @param baseDN
      */
-    public void setBaseDN(String baseDN);
+    public void setBaseDN(final String baseDN);
 
     /**
      * Getter for group searching base DN
@@ -26,13 +26,13 @@ public interface IActiveDirectoryTokenGroupsRegistry {
      *
      * @param tokenGroup String representation that will be converted to byte[]
      */
-    public String getDnFromToken(String tokenGroup);
+    public String getDnFromToken(final String tokenGroup);
     
     /**
      * Resolve a binary SID to its Distinguished Name
      *
      * @param tokenGroup byte array representing the SID in binary format (fetched from AD)
      */
-    public String getDnFromToken(byte[] tokenGroup);
+    public String getDnFromToken(final byte[] tokenGroup);
     
 }

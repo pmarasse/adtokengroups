@@ -105,13 +105,13 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     }
 
     @Override
-    public String getDnFromToken(String tokenGroup) {
+    public String getDnFromToken(final String tokenGroup) {
 
         return getDnFromToken(tokenGroup.getBytes());
     }
 
     @Override
-    public String getDnFromToken(byte[] tokenGroup) {
+    public String getDnFromToken(final byte[] tokenGroup) {
 
         String sid;
 
@@ -141,7 +141,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
 
     }
 
-    private final String toHexString(byte[] bytes) {
+    private final String toHexString(final byte[] bytes) {
 
         StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) {
@@ -167,7 +167,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         return policy;
     }
 
-    public void setPolicy(Policy policy) {
+    public void setPolicy(final Policy policy) {
 
         this.policy = policy;
     }
@@ -197,7 +197,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         return cache;
     }
 
-    public void setCache(Cache cache) {
+    public void setCache(final Cache cache) {
 
         this.cache = cache;
     }

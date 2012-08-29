@@ -17,12 +17,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     /**
      * logger for this class
      */
-    private final Logger log = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
-
-    /**
-     * LDAP context source
-     */
-    protected ContextSource cs;
+    private final Logger    log    = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
 
     /**
      * Base DN when looking for groups (relative to baseDN provided to contextSource)
@@ -32,43 +27,33 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     /**
      * baseDN provided to contextSource (as it is impossible to determine it by querying contextSource)
      */
-    protected LdapName 		contextSourceBaseDN;
-    
+    protected LdapName      contextSourceBaseDN;
+
     protected LdapTemplate  ldapTemplate;
 
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Validating bean values");
-        }
-        if (cs == null) {
+        log.debug("Validating bean values");
+        if (ldapTemplate == null) {
             throw new BeanCreationException("LDAP ContextSource cannot be null");
         }
-        if (log.isDebugEnabled()) {
-            log.debug("Validated with group search base : " + baseDN);
-        }
-        ldapTemplate = new LdapTemplate(cs);
+        log.debug("Validated with group search base : {}", baseDN);
         ldapTemplate.setIgnorePartialResultException(true);
         ldapTemplate.afterPropertiesSet();
-        
+
     }
 
     // getters et setters
 
-    public void setContextSource(ContextSource cs) {
+    public void setContextSource(final ContextSource cs) {
 
-        this.cs = cs;
+        ldapTemplate = new LdapTemplate(cs);
 
-    }
-
-    public ContextSource getContextSource() {
-
-        return this.cs;
     }
 
     @Override
-    public void setBaseDN(String baseDN) {
+    public void setBaseDN(final String baseDN) {
 
         this.baseDN = baseDN;
 
@@ -79,7 +64,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
 
         return baseDN;
     }
-    
+
     // Wrapper getter around LdapName
     public String getContextSourceBaseDN() {
 

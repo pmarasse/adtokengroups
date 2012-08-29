@@ -32,7 +32,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
     protected final static String[] QUERY_ATTRS       = { "cn" };
     
-    protected final String escapeOctetString(byte[] octetString) {
+    protected final String escapeOctetString(final byte[] octetString) {
 
         StringBuilder sb = new StringBuilder(octetString.length * 3);
         for (byte b : octetString) {
@@ -42,13 +42,13 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     }
 
     @Override
-    public String getDnFromToken(String tokenGroup) {
+    public String getDnFromToken(final String tokenGroup) {
 
         return getDnFromToken(tokenGroup.getBytes());
     }
 
     @Override
-    public String getDnFromToken(byte[] tokenGroup) {
+    public String getDnFromToken(final byte[] tokenGroup) {
 
         Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
 
@@ -61,7 +61,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             } catch (Exception e) {
 
             }
-            log.debug("Querying directory with filter : " + localFilter + " (resolve SID: " + sid + ")");
+            log.debug("Querying directory with filter : {} (resolve SID: {})", localFilter, sid);
         }
 
         SearchControls sc = new SearchControls();
@@ -98,7 +98,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
             DirContextAdapter context = (DirContextAdapter) ctx;
             if (log.isDebugEnabled()) {
-                log.debug("Attributes returned by context : " + context.getAttributes().toString());
+                log.debug("Attributes returned by context : {}", context.getAttributes().toString());
             }
 
             if (contextSourceBaseDN == null) {

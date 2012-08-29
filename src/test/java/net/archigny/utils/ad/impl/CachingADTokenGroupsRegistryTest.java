@@ -88,11 +88,11 @@ public class CachingADTokenGroupsRegistryTest {
         try {
 
             // Cache Miss
-            log.info("Resolving first token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
+            log.info("Resolving first token : {}", LdapUtils.convertBinarySidToString(TOKEN_1));
             long now = System.currentTimeMillis();
             String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
             long now2 = System.currentTimeMillis();
-            log.info("Found group DN : " + group1DN + "(time : " + (now2 - now) + " ms)");
+            log.info("Found group DN : {} (time : {} ms)", group1DN, (now2 - now));
             LdapName name1 = new LdapName(group1DN);
 
             assertTrue(name1.equals(new LdapName(GROUP_1_NAME)));
@@ -105,7 +105,7 @@ public class CachingADTokenGroupsRegistryTest {
             log.info("Second fetch time : " + (now2 - now) + " ms.");
 
             // Cache Miss
-            log.info("Resolving second token : " + LdapUtils.convertBinarySidToString(TOKEN_2));
+            log.info("Resolving second token : {}", LdapUtils.convertBinarySidToString(TOKEN_2));
             now = System.currentTimeMillis();
             String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
             now2 = System.currentTimeMillis();
