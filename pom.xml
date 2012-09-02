@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.archigny.utils</groupId>
     <artifactId>adtokengroups</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -128,7 +128,7 @@
         </repository>
         
         <snapshotRepository>
-            <id>orthanc-snapshots</id>
+            <id>orthanc-snapshot</id>
             <name>Dépôt local snapshots</name>
             <url>scp://orthanc.archigny.net/data/orthanc/maven2/snapshots</url>
         </snapshotRepository>
