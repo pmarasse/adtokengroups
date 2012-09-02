@@ -18,7 +18,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     /**
      * Cache name used by all instances of Registry
      */
-    public static final String CACHE_NAME      = "ehcache-ad-token-groups-registry";
+    public static final String CACHE_NAME      = "net.archigny.utils.ad.impl.cachingadtokengroupsregistry";
 
     /**
      * Default value for in-memory storage
@@ -94,9 +94,9 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     @Override
     public void destroy() {
 
-        CacheManager cm = CacheManager.getInstance();
+        final CacheManager cm = CacheManager.getInstance();
         cm.removeCache(CACHE_NAME);
-        String[] cacheNames = cm.getCacheNames();
+        final String[] cacheNames = cm.getCacheNames();
 
         // Shutdown cache manager if no other cache is registered
         if (cacheNames.length == 0) {
@@ -124,14 +124,14 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         }
 
         // Cache lookup
-        Element cachedElement;
+        final Element cachedElement;
         if ((cachedElement = cache.get(sid)) != null) {
             // Cache Hit
             return (String) cachedElement.getObjectValue();
         }
 
         // Cache Miss
-        String groupDN = super.getDnFromToken(tokenGroup);
+        final String groupDN = super.getDnFromToken(tokenGroup);
 
         if ((groupDN != null) || (cacheNullValues)) {
             cache.put(new Element(sid, groupDN));

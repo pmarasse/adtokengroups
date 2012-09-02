@@ -34,7 +34,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     
     protected final String escapeOctetString(final byte[] octetString) {
 
-        StringBuilder sb = new StringBuilder(octetString.length * 3);
+        final StringBuilder sb = new StringBuilder(octetString.length * 3);
         for (byte b : octetString) {
             sb.append(String.format("\\%02x", b));
         }
@@ -50,9 +50,9 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     @Override
     public String getDnFromToken(final byte[] tokenGroup) {
 
-        Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
+        final Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
 
-        String localFilter = queryMatcher.replaceAll(Matcher.quoteReplacement(escapeOctetString(tokenGroup)));
+        final String localFilter = queryMatcher.replaceAll(Matcher.quoteReplacement(escapeOctetString(tokenGroup)));
         if (log.isDebugEnabled()) {
             String sid = "";
             // sid String transform can raise an index out of bounds exception
@@ -64,14 +64,14 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             log.debug("Querying directory with filter : {} (resolve SID: {})", localFilter, sid);
         }
 
-        SearchControls sc = new SearchControls();
+        final SearchControls sc = new SearchControls();
         sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
         sc.setReturningAttributes(QUERY_ATTRS);
         sc.setReturningObjFlag(true);
 
         try {
             @SuppressWarnings("unchecked")
-            List<String> groupDNs = ldapTemplate.search(baseDN, localFilter, sc, new DnFetcher());
+            final List<String> groupDNs = ldapTemplate.search(baseDN, localFilter, sc, new DnFetcher());
 
             if (groupDNs.isEmpty()) {
                 return null;
@@ -96,7 +96,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
         @Override
         public Object mapFromContext(Object ctx) {
 
-            DirContextAdapter context = (DirContextAdapter) ctx;
+            final DirContextAdapter context = (DirContextAdapter) ctx;
             if (log.isDebugEnabled()) {
                 log.debug("Attributes returned by context : {}", context.getAttributes().toString());
             }
@@ -105,7 +105,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             	return context.getDn().toString();
             }
             
-            DistinguishedName dn = new DistinguishedName(contextSourceBaseDN);
+            final DistinguishedName dn = new DistinguishedName(contextSourceBaseDN);
 
             if (dn.isEmpty()) {
                 return context.getDn().toString();

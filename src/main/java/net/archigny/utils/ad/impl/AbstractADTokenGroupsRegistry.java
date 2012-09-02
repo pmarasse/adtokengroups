@@ -29,6 +29,9 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
      */
     protected LdapName      contextSourceBaseDN;
 
+    /**
+     * LDAP template used to query the directory
+     */
     protected LdapTemplate  ldapTemplate;
 
     @Override
@@ -71,7 +74,7 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
         return (contextSourceBaseDN == null ? "" : contextSourceBaseDN.toString());
     }
 
-    public void setContextSourceBaseDN(String baseDN) {
+    public void setContextSourceBaseDN(final String baseDN) {
 
         if (baseDN == null) {
             throw new IllegalArgumentException("baseDN cannot be null");
