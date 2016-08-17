@@ -23,9 +23,9 @@
     <!-- le pool est géré par le bean searchContextSource, donc pooled=false ici -->
     <bean id="targetContextSource" class="org.springframework.ldap.core.support.LdapContextSource" 
         p:pooled="false" 
-        p:userDn="cn=Application Test,ou=Applications,ou=Utilisateurs,dc=in,dc=archigny,dc=org"
-        p:password="123456" 
-        p:url="ldap://win2k8.in.archigny.org/">
+        p:userDn="cn=maven,ou=Applications,dc=test,dc=ch-poitiers,dc=fr"
+        p:password="qdsFpRq9GFZ9e7pD" 
+        p:url="ldap://ad2012test.ch-poitiers.fr/">
 
         <property name="baseEnvironmentProperties">
             <map>
@@ -37,7 +37,7 @@
     </bean>
 
     <bean id="tokenGroupsRegistry" class="net.archigny.utils.ad.impl.CachingADTokenGroupsRegistry"
-        p:baseDN="ou=Groupes,dc=in,dc=archigny,dc=org"
+        p:baseDN="ou=Groupes,dc=test,dc=ch-poitiers,dc=fr"
         p:cacheNullValues="true"
         p:contextSource-ref="searchContextSource"
         p:cache-ref="ehcache" />
