@@ -88,8 +88,6 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     
     /**
      * A simple ContextMapper to only fetch DN of result objects.
-     * 
-     * @author Philippe Marasse <philippe.marasse@laposte.net>
      */
     protected class DnFetcher implements ContextMapper {
 
