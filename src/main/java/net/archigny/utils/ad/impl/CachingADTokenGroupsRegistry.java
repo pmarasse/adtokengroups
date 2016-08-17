@@ -11,6 +11,12 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.store.LfuPolicy;
 import net.sf.ehcache.store.Policy;
 
+/**
+ * Implementation of token group registry using EhCache in order to light the burden of active directory 
+ * 
+ * @author Philippe MARASSE
+ *
+ */
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
 
     private final Logger       log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
@@ -26,12 +32,12 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     public static final int    MAX_ELEMENTS    = 100;
 
     /**
-     * Default time to live for elements : 86400s => 1 day
+     * Default time to live for elements : 86400s =&gt; 1 day
      */
     public static final long   DEFAULT_TTL     = 86400;
 
     /**
-     * Default time to idle (maximum time between hits) for elements : 43200 => 12 hours
+     * Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours
      */
     public static final long   DEFAULT_TTI     = 43200;
 

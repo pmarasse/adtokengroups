@@ -19,7 +19,7 @@ import org.springframework.ldap.support.LdapUtils;
  * Simple implementation of Token Groups Registry with no caching : each query for a group translation will make a LDAP query to the
  * directory
  * 
- * @author Philippe Marasse <philippe.marasse@laposte.net>
+ * @author Philippe Marasse
  * 
  */
 public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
