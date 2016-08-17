@@ -12,6 +12,12 @@ import org.springframework.ldap.core.LdapTemplate;
 
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 
+/**
+ * Abstract class implementing base functions.
+ * 
+ * @author Philippe MARASSE
+ *
+ */
 public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryTokenGroupsRegistry, InitializingBean {
 
     /**

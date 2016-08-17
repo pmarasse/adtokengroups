@@ -25,6 +25,7 @@ public interface IActiveDirectoryTokenGroupsRegistry {
      * Resolve a string represented binary SID to its Distinguished Name
      *
      * @param tokenGroup String representation that will be converted to byte[]
+     * @return Distinguished name of token or null if non existent
      */
     public String getDnFromToken(final String tokenGroup);
     
@@ -32,6 +33,7 @@ public interface IActiveDirectoryTokenGroupsRegistry {
      * Resolve a binary SID to its Distinguished Name
      *
      * @param tokenGroup byte array representing the SID in binary format (fetched from AD)
+     * @return Distinguished name of token or null if non existent
      */
     public String getDnFromToken(final byte[] tokenGroup);
     
