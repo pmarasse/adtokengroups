@@ -3,63 +3,72 @@ package net.archigny.utils.ad.impl;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 
+import org.ldaptive.Connection;
+import org.ldaptive.ConnectionFactory;
+import org.ldaptive.LdapException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.ldap.core.ContextSource;
-import org.springframework.ldap.core.LdapTemplate;
-
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 
 /**
  * Abstract class implementing base functions.
  * 
  * @author Philippe MARASSE
- *
  */
 public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryTokenGroupsRegistry, InitializingBean {
 
-    /**
-     * logger for this class
-     */
-    private final Logger    log    = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
+    /** logger for this class */
+    private final Logger        log    = LoggerFactory.getLogger(AbstractADTokenGroupsRegistry.class);
 
-    /**
-     * Base DN when looking for groups (relative to baseDN provided to contextSource)
-     */
-    protected String        baseDN = "";
+    /** Base DN when looking for groups (relative to baseDN provided to contextSource) */
+    protected String            baseDN = "";
 
-    /**
-     * baseDN provided to contextSource (as it is impossible to determine it by querying contextSource)
-     */
-    protected LdapName      contextSourceBaseDN;
+    /** LDAP Connection Factory */
+    protected ConnectionFactory ldapConnectionFactory;
 
-    /**
-     * LDAP template used to query the directory
-     */
-    protected LdapTemplate  ldapTemplate;
+    /** Current LDAP Connection */
+    protected Connection        ldapConnection;
 
     @Override
     public void afterPropertiesSet() throws Exception {
 
         log.debug("Validating bean values");
-        if (ldapTemplate == null) {
-            throw new BeanCreationException("LDAP ContextSource cannot be null");
+        if (ldapConnectionFactory == null) {
+            throw new BeanCreationException("LDAP connection cannot be null !");
         }
         log.debug("Validated with group search base : {}", baseDN);
-        ldapTemplate.setIgnorePartialResultException(true);
-        ldapTemplate.afterPropertiesSet();
 
+    }
+
+    /**
+     * assures that a LDAP connection is opened or throws an IllegalStateException
+     */
+    protected void initLdap() {
+
+        if (ldapConnection == null) {
+            try {
+                ldapConnection = ldapConnectionFactory.getConnection();
+                ldapConnection.open();
+            } catch (LdapException e) {
+                throw new IllegalStateException("Error opening LDAP connection", e);
+            }
+        }
+    }
+
+    /**
+     * Closes LDAP connection if opened
+     */
+    protected void cleanUpLdap() {
+
+        if (ldapConnection != null) {
+            ldapConnection.close();
+            ldapConnection = null;
+        }
     }
 
     // getters et setters
-
-    public void setContextSource(final ContextSource cs) {
-
-        ldapTemplate = new LdapTemplate(cs);
-
-    }
 
     @Override
     public void setBaseDN(final String baseDN) {
@@ -74,23 +83,14 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
         return baseDN;
     }
 
-    // Wrapper getter around LdapName
-    public String getContextSourceBaseDN() {
+    public ConnectionFactory getLdapConnectionFactory() {
 
-        return (contextSourceBaseDN == null ? "" : contextSourceBaseDN.toString());
+        return ldapConnectionFactory;
     }
 
-    public void setContextSourceBaseDN(final String baseDN) {
+    public void setLdapConnectionFactory(ConnectionFactory ldapConnectionFactory) {
 
-        if (baseDN == null) {
-            throw new IllegalArgumentException("baseDN cannot be null");
-        }
-        try {
-            this.contextSourceBaseDN = new LdapName(baseDN);
-        } catch (InvalidNameException e) {
-            throw new IllegalArgumentException(e);
-        }
-
+        this.ldapConnectionFactory = ldapConnectionFactory;
     }
 
 }

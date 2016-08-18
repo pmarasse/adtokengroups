@@ -1,19 +1,16 @@
 package net.archigny.utils.ad.impl;
 
-import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.naming.InvalidNameException;
-import javax.naming.directory.SearchControls;
-
+import org.ldaptive.LdapEntry;
+import org.ldaptive.LdapException;
+import org.ldaptive.SearchFilter;
+import org.ldaptive.SearchOperation;
+import org.ldaptive.SearchRequest;
+import org.ldaptive.SearchResult;
+import org.ldaptive.ad.SecurityIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.NameNotFoundException;
-import org.springframework.ldap.core.ContextMapper;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DistinguishedName;
-import org.springframework.ldap.support.LdapUtils;
 
 /**
  * Simple implementation of Token Groups Registry with no caching : each query for a group translation will make a LDAP query to the
@@ -26,12 +23,22 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
     private final Logger            log               = LoggerFactory.getLogger(SimpleADTokenGroupsRegistry.class);
 
+    /** Pattern used to replace placeholder */
     protected final static Pattern  QUERY_PLACEHOLDER = Pattern.compile("\\{0\\}");
 
-    protected final static String   QUERY_SID         = "(objectSid={0})";
+    /** LDAP Query for SID */
+    protected final static String   QUERY_SID         = "(objectSid={sid})";
 
+    /** LDAP Attribute to retrieve */
     protected final static String[] QUERY_ATTRS       = { "cn" };
-    
+
+    /**
+     * Converts octetString to escaped string for use within a LDAP filter
+     * 
+     * @param octetString
+     *            octet string to escape
+     * @return converted value
+     */
     protected final String escapeOctetString(final byte[] octetString) {
 
         final StringBuilder sb = new StringBuilder(octetString.length * 3);
@@ -50,75 +57,43 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     @Override
     public String getDnFromToken(final byte[] tokenGroup) {
 
-        final Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
+        // final Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
 
-        final String localFilter = queryMatcher.replaceAll(Matcher.quoteReplacement(escapeOctetString(tokenGroup)));
+        // final String localFilter = MessageFormat.format(QUERY_SID, escapeOctetString(tokenGroup));
+
+        final SearchFilter localFilter = new SearchFilter(QUERY_SID);
+        localFilter.setParameter("sid", tokenGroup);
+
         if (log.isDebugEnabled()) {
             String sid = "";
             // sid String transform can raise an index out of bounds exception
             try {
-                sid = LdapUtils.convertBinarySidToString(tokenGroup);
+                sid = SecurityIdentifier.toString(tokenGroup);
             } catch (Exception e) {
 
             }
-            log.debug("Querying directory with filter : {} (resolve SID: {})", localFilter, sid);
+            log.debug("Querying directory with filter : {} (resolve SID: {})", localFilter.toString(), sid);
         }
 
-        final SearchControls sc = new SearchControls();
-        sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        sc.setReturningAttributes(QUERY_ATTRS);
-        sc.setReturningObjFlag(true);
+        initLdap();
+        SearchOperation search = new SearchOperation(ldapConnection);
 
         try {
-            @SuppressWarnings("unchecked")
-            final List<String> groupDNs = ldapTemplate.search(baseDN, localFilter, sc, new DnFetcher());
+            SearchResult result = search.execute(new SearchRequest(baseDN, localFilter, QUERY_ATTRS)).getResult();
+            LdapEntry entry = result.getEntry();
 
-            if (groupDNs.isEmpty()) {
+            if (entry == null) {
                 return null;
             }
 
             // A single value is expected...
-            return groupDNs.get(0);
+            return entry.getDn();
 
-        } catch (NameNotFoundException e) {
+        } catch (LdapException e) {
+            log.error("LDAP Exception raised : {}", e.getMessage());
             // in case of object not found, return null
             return null;
         }
-    }
-    
-    /**
-     * A simple ContextMapper to only fetch DN of result objects.
-     */
-    protected class DnFetcher implements ContextMapper {
-
-        @Override
-        public Object mapFromContext(Object ctx) {
-
-            final DirContextAdapter context = (DirContextAdapter) ctx;
-            if (log.isDebugEnabled()) {
-                log.debug("Attributes returned by context : {}", context.getAttributes().toString());
-            }
-
-            if (contextSourceBaseDN == null) {
-            	return context.getDn().toString();
-            }
-            
-            final DistinguishedName dn = new DistinguishedName(contextSourceBaseDN);
-
-            if (dn.isEmpty()) {
-                return context.getDn().toString();
-            } else {
-                try {
-                    dn.addAll(context.getDn());
-                    return dn.toString();
-                } catch (InvalidNameException e) {
-                    // Unexpected... in this case, return only context DN
-                    return context.getDn().toString();
-                }
-            }
-
-        }
-
     }
 
 }
