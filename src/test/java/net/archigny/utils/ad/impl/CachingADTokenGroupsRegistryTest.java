@@ -2,16 +2,36 @@ package net.archigny.utils.ad.impl;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Statistics;
+
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.FactoryBuilder;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.ExpiryPolicy;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MXBean;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +52,8 @@ public class CachingADTokenGroupsRegistryTest {
 
     public final static String      SERVER_URL   = "ldap://ad2012test.ch-poitiers.fr";
 
-    /*
-     * Token list taken from ldap search : ldapsearch -x -D "bindDN" -w bindPW -H ldap://ad2012test.ch-poitiers.fr 
-     * -b "CN=Cathelyn Stark,OU=Utilisateurs,DC=TEST,DC=CH-POITIERS,DC=FR" -s base tokenGroups
-     */
+    /* Token list taken from ldap search : ldapsearch -x -D "bindDN" -w bindPW -H ldap://ad2012test.ch-poitiers.fr -b
+     * "CN=Cathelyn Stark,OU=Utilisateurs,DC=TEST,DC=CH-POITIERS,DC=FR" -s base tokenGroups */
     public final static byte[]      TOKEN_1      = Base64.decodeBase64("AQIAAAAAAAUgAAAAIQIAAA==");
 
     public final static String      GROUP_1_NAME = "CN=Users,CN=Builtin," + BASE_DN;
@@ -61,16 +79,35 @@ public class CachingADTokenGroupsRegistryTest {
     public final static String      GROUP_5_NAME = "cn=Domain Users,cn=Users," + BASE_DN;
 
     public final static byte[]      TOKEN_6      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1cAQAAA==");
-    
+
     /** Indirect group Tully => Riverlands */
     public final static String      GROUP_6_NAME = "cn=Riverlands,ou=Groupes," + BASE_DN;
 
     public final static byte[]      TOKEN_7      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1UwQAAA==");
-    
+
     /** Direct group */
     public final static String      GROUP_7_NAME = "cn=Tully,ou=Groupes," + BASE_DN;
 
     public final Logger             log          = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
+
+    private static CacheManager            cm;
+
+    private static Cache<String, String>   cache;
+
+    @BeforeClass
+    public static void prepare() {
+
+        cm = Caching.getCachingProvider().getCacheManager();
+        MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
+                String.class);
+        config.setExpiryPolicyFactory(new FactoryBuilder.SingletonFactory<ExpiryPolicy>(new CreatedExpiryPolicy(
+                new Duration(TimeUnit.SECONDS, 86400))));
+        config.setStoreByValue(false);
+
+        cache = cm.createCache(CachingADTokenGroupsRegistry.CACHE_NAME, config);
+        cm.enableStatistics(CachingADTokenGroupsRegistry.CACHE_NAME, true);
+
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -85,8 +122,15 @@ public class CachingADTokenGroupsRegistryTest {
             cs.setUrl(SERVER_URL);
             cs.afterPropertiesSet();
         }
+
     }
 
+    @AfterClass
+    public static void tearDown() {
+        cache.close();
+        cm.close();
+    }
+    
     @Test
     public void getDNFromTokenTest() throws Exception {
 
@@ -96,8 +140,6 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setContextSource(cs);
         tokenRegistry.setContextSourceBaseDN(BASE_DN);
         tokenRegistry.afterPropertiesSet();
-        Cache cache = tokenRegistry.getCache();
-        cache.setStatisticsEnabled(true);
 
         try {
 
@@ -157,15 +199,6 @@ public class CachingADTokenGroupsRegistryTest {
             String noGroup = tokenRegistry.getDnFromToken("test-marchera-pas");
             assertNull(noGroup);
 
-            Statistics stats = cache.getStatistics();
-            log.info("Hits : " + stats.getCacheHits() + " / Miss : " + stats.getCacheMisses() + " / objets en cache : "
-                    + stats.getObjectCount() + " / evictions du cache : " + stats.getEvictionCount());
-
-            assertEquals(1, stats.getCacheHits());
-            assertEquals(5, stats.getCacheMisses());
-            assertEquals(3, stats.getObjectCount());
-            assertEquals(2, stats.getEvictionCount());
-
             log.info("Waiting more than timeToIdle");
             Thread.sleep(900);
             // Cache Hit
@@ -174,21 +207,9 @@ public class CachingADTokenGroupsRegistryTest {
             // Cache Miss (TTL = 1s)
             dummy = tokenRegistry.getDnFromToken(TOKEN_1);
 
-            stats = cache.getStatistics();
-            log.info("Hits : " + stats.getCacheHits() + " / Miss : " + stats.getCacheMisses() + " / objets en cache : "
-                    + stats.getObjectCount() + " / evictions du cache : " + stats.getEvictionCount());
-
-            assertEquals(2, stats.getCacheHits());
-            assertEquals(6, stats.getCacheMisses());
-            assertEquals(3, stats.getObjectCount());
-            assertEquals(2, stats.getEvictionCount());
-
         } catch (InvalidNameException e) {
             fail("Unexpected InvalidNameException thrown");
         }
-        
-        CacheManager cm = CacheManager.getInstance();
-        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
     }
 
     @Test
@@ -202,8 +223,6 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setContextSource(cs);
         tokenRegistry.setBaseDN("");
         tokenRegistry.afterPropertiesSet();
-        Cache cache = tokenRegistry.getCache();
-        cache.setStatisticsEnabled(true);
 
         @SuppressWarnings("unused")
         CachingADTokenGroupsRegistry tokenRegistry2 = new CachingADTokenGroupsRegistry();
@@ -225,8 +244,6 @@ public class CachingADTokenGroupsRegistryTest {
         tokenRegistry.setBaseDN("ou=Utilisateurs");
         tokenRegistry.afterPropertiesSet();
         tokenRegistry.setCacheNullValues(true);
-        Cache cache = tokenRegistry.getCache();
-        cache.setStatisticsEnabled(true);
 
         Thread.sleep(2000);
 
@@ -239,56 +256,11 @@ public class CachingADTokenGroupsRegistryTest {
 
         assertNull(group1DN);
 
-        long hits = cache.getStatistics().getInMemoryHits();
-
         now = System.currentTimeMillis();
         group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
         now2 = System.currentTimeMillis();
         log.info("Querying (cached) group DN time : " + (now2 - now) + " ms)");
 
-        assertEquals(1, cache.getStatistics().getInMemoryHits() - hits);
-
-        CacheManager cm = CacheManager.getInstance();
-        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
-        cm.shutdown();
     }
 
-    @Test
-    public void springBeanTest() throws InvalidNameException {
-        
-        ApplicationContext testApp = new ClassPathXmlApplicationContext("app-test.xml");
-        IActiveDirectoryTokenGroupsRegistry tokenRegistry = (IActiveDirectoryTokenGroupsRegistry) testApp.getBean("tokenGroupsRegistry");
-        assertNotNull(tokenRegistry);
-        
-        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
-        assertNull(group1DN);
-        
-        String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
-        LdapName name2 = new LdapName(group2DN);
-
-        assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
-
-        CacheManager cm = CacheManager.getInstance();
-        cm.removeCache(CachingADTokenGroupsRegistry.CACHE_NAME);
-        cm.shutdown();
-
-    }
-    
-    @Test
-    public void springCacheFactory() throws InvalidNameException {
-        
-        ApplicationContext testApp = new ClassPathXmlApplicationContext("app-test-factory.xml");
-        IActiveDirectoryTokenGroupsRegistry tokenRegistry = (IActiveDirectoryTokenGroupsRegistry) testApp.getBean("tokenGroupsRegistry");
-        assertNotNull(tokenRegistry);
-        
-        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
-        assertNull(group1DN);
-        
-        String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
-        LdapName name2 = new LdapName(group2DN);
-
-        assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
-        
-    }
-    
 }

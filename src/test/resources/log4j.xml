@@ -4,7 +4,7 @@
     <appender name="DefaultLog" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.err" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %m%n" />
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%C{1}.%M] %m%n" />
         </layout>
     </appender>
         <logger name="org.springframework">

@@ -1,76 +1,76 @@
 package net.archigny.utils.ad.impl;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.configuration.Factory;
+import javax.cache.configuration.FactoryBuilder;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.ExpiryPolicy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.ldap.support.LdapUtils;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.store.LfuPolicy;
-import net.sf.ehcache.store.Policy;
-
 /**
- * Implementation of token group registry using EhCache in order to light the burden of active directory 
+ * Implementation of token group registry using EhCache in order to light the burden of active directory
  * 
  * @author Philippe MARASSE
  *
  */
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
 
-    private final Logger       log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
+    private final Logger          log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
 
     /**
      * Cache name used by all instances of Registry
      */
-    public static final String CACHE_NAME      = "net.archigny.utils.ad.impl.cachingadtokengroupsregistry";
+    public static final String    CACHE_NAME      = "net.archigny.utils.ad.impl.cachingadtokengroupsregistry";
 
     /**
      * Default value for in-memory storage
      */
-    public static final int    MAX_ELEMENTS    = 100;
+    public static final int       MAX_ELEMENTS    = 100;
 
     /**
      * Default time to live for elements : 86400s =&gt; 1 day
      */
-    public static final long   DEFAULT_TTL     = 86400;
+    public static final long      DEFAULT_TTL     = 86400;
 
     /**
      * Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours
      */
-    public static final long   DEFAULT_TTI     = 43200;
+    public static final long      DEFAULT_TTI     = 43200;
 
     /**
-     * EhCache cache
+     * JCache cache <SID (String), DN (String>>
      */
-    private Cache              cache;
+    private Cache<String, String> cache;
 
     /**
      * Number of cached elements
      */
-    private int                maxElements     = MAX_ELEMENTS;
-
-    /**
-     * Cache Eviction Policy (default : LFU)
-     */
-    private Policy             policy          = new LfuPolicy();
+    private int                   maxElements     = MAX_ELEMENTS;
 
     /**
      * Time to live for elements (seconds)
      */
-    private long               timeToLive      = DEFAULT_TTL;
+    private long                  timeToLive      = DEFAULT_TTL;
 
     /**
      * Time to Idle for elements (maximum seconds between accesses)
      */
-    private long               timeToIdle      = DEFAULT_TTI;
+    private long                  timeToIdle      = DEFAULT_TTI;
 
     /**
      * True if it's allowed to cache null group value (useful if search base is not the base of AD forest in order to avoid hitting
      * AD with unnecessary requests)
      */
-    private boolean            cacheNullValues = false;
+    private boolean               cacheNullValues = false;
 
     /**
      * Method called to initialize the bean
@@ -83,11 +83,15 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         if (cache == null) {
             log.info("Cache not provided, trying to get one.");
 
-            CacheManager cm = CacheManager.getInstance();
-            if ((cache = cm.getCache(CACHE_NAME)) == null) {
-                cache = new Cache(CACHE_NAME, maxElements, false, false, timeToLive, timeToIdle);
-                cm.addCache(cache);
-                cache.setMemoryStoreEvictionPolicy(policy);
+            CacheManager cm = Caching.getCachingProvider().getCacheManager();
+            if ((cache = cm.getCache(CACHE_NAME, String.class, String.class)) == null) {
+                Factory<ExpiryPolicy> policyFactory =new FactoryBuilder.SingletonFactory<ExpiryPolicy>(new CreatedAccessedExpiryPolicy(
+                        new Duration(TimeUnit.SECONDS, timeToLive), new Duration(TimeUnit.SECONDS, timeToIdle))); 
+                
+                MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
+                        String.class).setExpiryPolicyFactory(policyFactory);
+                
+                cache = cm.createCache(CACHE_NAME, config);
             } else {
                 log.info("using existing cache instance - ignoring parameters maxElements, timeToLive, timeToIdle");
             }
@@ -100,14 +104,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     @Override
     public void destroy() {
 
-        final CacheManager cm = CacheManager.getInstance();
-        cm.removeCache(CACHE_NAME);
-        final String[] cacheNames = cm.getCacheNames();
-
-        // Shutdown cache manager if no other cache is registered
-        if (cacheNames.length == 0) {
-            cm.shutdown();
-        }
+        cache.close();
     }
 
     @Override
@@ -130,17 +127,15 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         }
 
         // Cache lookup
-        final Element cachedElement;
-        if ((cachedElement = cache.get(sid)) != null) {
-            // Cache Hit
-            return (String) cachedElement.getObjectValue();
+        if (cache.containsKey(sid)) {
+            return cache.get(sid);
         }
 
         // Cache Miss
         final String groupDN = super.getDnFromToken(tokenGroup);
 
         if ((groupDN != null) || (cacheNullValues)) {
-            cache.put(new Element(sid, groupDN));
+            cache.put(sid, groupDN);
         }
 
         return groupDN;
@@ -168,16 +163,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         this.maxElements = maxElements;
     }
 
-    public Policy getPolicy() {
-
-        return policy;
-    }
-
-    public void setPolicy(final Policy policy) {
-
-        this.policy = policy;
-    }
-
     public long getTimeToLive() {
 
         return timeToLive;
@@ -198,16 +183,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         this.timeToIdle = timeToIdle;
     }
 
-    public Cache getCache() {
-
-        return cache;
-    }
-
-    public void setCache(final Cache cache) {
-
-        this.cache = cache;
-    }
-
     public void setCacheNullValues(boolean cacheNullValues) {
 
         this.cacheNullValues = cacheNullValues;
@@ -217,5 +192,16 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
 
         return cacheNullValues;
     }
+
+    public Cache<String, String> getCache() {
+
+        return cache;
+    }
+
+    public void setCache(Cache<String, String> cache) {
+
+        this.cache = cache;
+    }
+
 
 }
