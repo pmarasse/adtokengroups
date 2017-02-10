@@ -24,46 +24,34 @@ import org.springframework.ldap.support.LdapUtils;
  */
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
 
+    /** Logger */
     private final Logger          log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
 
-    /**
-     * Cache name used by all instances of Registry
-     */
-    public static final String    CACHE_NAME      = "net.archigny.utils.ad.impl.cachingadtokengroupsregistry";
+    /** Cache name used by all instances of Registry */
+    public static final String    CACHE_NAME      = "net.archigny.utils.ad.impl.adtokengroupsregistry";
 
-    /**
-     * Default value for in-memory storage
-     */
+    /** Default value for in-memory storage */
     public static final int       MAX_ELEMENTS    = 100;
 
-    /**
-     * Default time to live for elements : 86400s =&gt; 1 day
-     */
+    /** Default time to live for elements : 86400s =&gt; 1 day */
     public static final long      DEFAULT_TTL     = 86400;
 
-    /**
-     * Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours
-     */
+    /** Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours  */
     public static final long      DEFAULT_TTI     = 43200;
 
-    /**
-     * JCache cache <SID (String), DN (String>>
-     */
+    /** Value used to specify null value caching as JSR107 does not allow this */
+    public static final String    NULL            = "";
+
+    /** JCache cache <SID (String), DN (String>> */
     private Cache<String, String> cache;
 
-    /**
-     * Number of cached elements
-     */
+    /** Number of cached elements */
     private int                   maxElements     = MAX_ELEMENTS;
 
-    /**
-     * Time to live for elements (seconds)
-     */
+    /** Time to live for elements (seconds) */
     private long                  timeToLive      = DEFAULT_TTL;
 
-    /**
-     * Time to Idle for elements (maximum seconds between accesses)
-     */
+    /** Time to Idle for elements (maximum seconds between accesses) */
     private long                  timeToIdle      = DEFAULT_TTI;
 
     /**
@@ -85,12 +73,13 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
 
             CacheManager cm = Caching.getCachingProvider().getCacheManager();
             if ((cache = cm.getCache(CACHE_NAME, String.class, String.class)) == null) {
-                Factory<ExpiryPolicy> policyFactory =new FactoryBuilder.SingletonFactory<ExpiryPolicy>(new CreatedAccessedExpiryPolicy(
-                        new Duration(TimeUnit.SECONDS, timeToLive), new Duration(TimeUnit.SECONDS, timeToIdle))); 
-                
+                Factory<ExpiryPolicy> policyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(
+                        new CreatedAccessedExpiryPolicy(
+                                new Duration(TimeUnit.SECONDS, timeToLive), new Duration(TimeUnit.SECONDS, timeToIdle)));
+
                 MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
                         String.class).setExpiryPolicyFactory(policyFactory);
-                
+
                 cache = cm.createCache(CACHE_NAME, config);
             } else {
                 log.info("using existing cache instance - ignoring parameters maxElements, timeToLive, timeToIdle");
@@ -121,21 +110,27 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
         try {
             sid = LdapUtils.convertBinarySidToString(tokenGroup);
         } catch (Exception e) {
-            log.error("An invalid SID has been passed as tokenGroup : " + toHexString(tokenGroup));
+            log.error("An invalid SID has been passed as tokenGroup : {}", toHexString(tokenGroup));
             // non parseable SID => will not attempt to contact LDAP directory
             return null;
         }
 
         // Cache lookup
         if (cache.containsKey(sid)) {
-            return cache.get(sid);
+            String cachedValue = cache.get(sid);
+            if (cacheNullValues && NULL.equals(cachedValue)) {
+                return null;
+            }
+            return cachedValue;
         }
 
         // Cache Miss
         final String groupDN = super.getDnFromToken(tokenGroup);
 
-        if ((groupDN != null) || (cacheNullValues)) {
+        if (groupDN != null) {
             cache.put(sid, groupDN);
+        } else if (cacheNullValues && groupDN == null) {
+            cache.put(sid, NULL);
         }
 
         return groupDN;
@@ -202,6 +197,5 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
 
         this.cache = cache;
     }
-
 
 }

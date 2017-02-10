@@ -42,57 +42,61 @@ import org.springframework.ldap.support.LdapUtils;
 
 public class CachingADTokenGroupsRegistryTest {
 
-    public static LdapContextSource cs;
+    /** Logger */
+    public final Logger                  log                = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
 
-    public final static String      BASE_DN      = "dc=TEST,dc=CH-POITIERS,dc=FR";
+    public static LdapContextSource      cs;
 
-    public final static String      BIND_DN      = "cn=maven,ou=Applications," + BASE_DN;
+    public final static String           BASE_DN            = "dc=TEST,dc=CH-POITIERS,dc=FR";
 
-    public final static String      BIND_PW      = "qdsFpRq9GFZ9e7pD";
+    public final static String           BIND_DN            = "cn=maven,ou=Applications," + BASE_DN;
 
-    public final static String      SERVER_URL   = "ldap://ad2012test.ch-poitiers.fr";
+    public final static String           BIND_PW            = "qdsFpRq9GFZ9e7pD";
+
+    public final static String           SERVER_URL         = "ldap://ad2012test.ch-poitiers.fr";
 
     /* Token list taken from ldap search : ldapsearch -x -D "bindDN" -w bindPW -H ldap://ad2012test.ch-poitiers.fr -b
      * "CN=Cathelyn Stark,OU=Utilisateurs,DC=TEST,DC=CH-POITIERS,DC=FR" -s base tokenGroups */
-    public final static byte[]      TOKEN_1      = Base64.decodeBase64("AQIAAAAAAAUgAAAAIQIAAA==");
+    public final static byte[]           TOKEN_1            = Base64.decodeBase64("AQIAAAAAAAUgAAAAIQIAAA==");
 
-    public final static String      GROUP_1_NAME = "CN=Users,CN=Builtin," + BASE_DN;
+    public final static String           GROUP_1_NAME       = "CN=Users,CN=Builtin," + BASE_DN;
 
-    public final static byte[]      TOKEN_2      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1bwQAAA==");
+    public final static byte[]           TOKEN_2            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1bwQAAA==");
 
     /** Indirect group (Stark => North => Westeros) */
-    public final static String      GROUP_2_NAME = "cn=Westeros,ou=Groupes," + BASE_DN;
+    public final static String           GROUP_2_NAME       = "cn=Westeros,ou=Groupes," + BASE_DN;
 
-    public final static byte[]      TOKEN_3      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1UQQAAA==");
+    public final static byte[]           TOKEN_3            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1UQQAAA==");
 
     /** direct group */
-    public final static String      GROUP_3_NAME = "cn=Stark,ou=Groupes," + BASE_DN;
+    public final static String           GROUP_3_NAME       = "cn=Stark,ou=Groupes," + BASE_DN;
 
-    public final static byte[]      TOKEN_4      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1YAQAAA==");
+    public final static byte[]           TOKEN_4            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1YAQAAA==");
 
     /** Indirect group */
-    public final static String      GROUP_4_NAME = "cn=North,ou=Groupes," + BASE_DN;
+    public final static String           GROUP_4_NAME       = "cn=North,ou=Groupes," + BASE_DN;
 
-    public final static byte[]      TOKEN_5      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1AQIAAA==");
+    public final static byte[]           TOKEN_5            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1AQIAAA==");
 
     /** Direct group */
-    public final static String      GROUP_5_NAME = "cn=Domain Users,cn=Users," + BASE_DN;
+    public final static String           GROUP_5_NAME       = "cn=Domain Users,cn=Users," + BASE_DN;
 
-    public final static byte[]      TOKEN_6      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1cAQAAA==");
+    public final static byte[]           TOKEN_6            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1cAQAAA==");
 
     /** Indirect group Tully => Riverlands */
-    public final static String      GROUP_6_NAME = "cn=Riverlands,ou=Groupes," + BASE_DN;
+    public final static String           GROUP_6_NAME       = "cn=Riverlands,ou=Groupes," + BASE_DN;
 
-    public final static byte[]      TOKEN_7      = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1UwQAAA==");
+    public final static byte[]           TOKEN_7            = Base64.decodeBase64("AQUAAAAAAAUVAAAACZNq9g05OboEe8C1UwQAAA==");
 
     /** Direct group */
-    public final static String      GROUP_7_NAME = "cn=Tully,ou=Groupes," + BASE_DN;
+    public final static String           GROUP_7_NAME       = "cn=Tully,ou=Groupes," + BASE_DN;
 
-    public final Logger             log          = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
+    /** non existent token */
+    public final static byte[]           NON_EXISTENT_TOKEN = LdapUtils.convertStringSidToBinary("S-1-5-21-4134179593-3124312333-3049290520-513");
 
-    private static CacheManager            cm;
+    private static CacheManager          cm;
 
-    private static Cache<String, String>   cache;
+    private static Cache<String, String> cache;
 
     @BeforeClass
     public static void prepare() {
@@ -127,10 +131,11 @@ public class CachingADTokenGroupsRegistryTest {
 
     @AfterClass
     public static void tearDown() {
+
         cache.close();
         cm.close();
     }
-    
+
     @Test
     public void getDNFromTokenTest() throws Exception {
 
@@ -248,18 +253,20 @@ public class CachingADTokenGroupsRegistryTest {
         Thread.sleep(2000);
 
         // Cache Miss
-        log.info("Resolving first token : " + LdapUtils.convertBinarySidToString(TOKEN_1));
+        log.info("Resolving unknown token : {}", LdapUtils.convertBinarySidToString(NON_EXISTENT_TOKEN));
         long now = System.currentTimeMillis();
-        String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        String group1DN = tokenRegistry.getDnFromToken(NON_EXISTENT_TOKEN);
         long now2 = System.currentTimeMillis();
-        log.info("Querying group DN time : " + (now2 - now) + " ms)");
+        log.info("Querying group DN time : {} ms trouvé : {}", (now2 - now), group1DN);
 
-        assertNull(group1DN);
+        assertNull("Expected NULL, found : " + group1DN, group1DN);
 
         now = System.currentTimeMillis();
-        group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
+        group1DN = tokenRegistry.getDnFromToken(NON_EXISTENT_TOKEN);
         now2 = System.currentTimeMillis();
-        log.info("Querying (cached) group DN time : " + (now2 - now) + " ms)");
+        log.info("Querying (cached) group DN time : {} ms", (now2 - now));
+
+        assertNull("Expected NULL, found : " + group1DN, group1DN);
 
     }
 
