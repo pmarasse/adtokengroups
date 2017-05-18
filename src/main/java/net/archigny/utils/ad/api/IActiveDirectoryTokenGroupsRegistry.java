@@ -10,7 +10,7 @@ public interface IActiveDirectoryTokenGroupsRegistry {
     /**
      * Set the group base DN for querying groups eg: cn=Groups,dc=mydomain,dc=net
      * 
-     * @param baseDN
+     * @param baseDN String representation of base DN
      */
     public void setBaseDN(final String baseDN);
 

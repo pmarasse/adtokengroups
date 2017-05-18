@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.support.LdapUtils;
 
 /**
@@ -90,7 +89,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     /**
      * A simple ContextMapper to only fetch DN of result objects.
      * 
-     * @author Philippe Marasse <philippe.marasse@laposte.net>
+     * @author Philippe Marasse 
      */
     protected class DnFetcher implements ContextMapper {
 
