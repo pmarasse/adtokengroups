@@ -40,7 +40,7 @@ import com.unboundid.ldap.sdk.LDAPConnectionOptions;
 public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
     /** Logger */
-    public final Logger                  log                = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
+    private static final Logger          log                = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
 
     public final static String           BASE_DN            = "dc=TEST,dc=CH-POITIERS,dc=FR";
 
@@ -162,7 +162,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
             log.info("Found group DN : {} (time : {} ms)", group1DN, (now2 - now));
             LdapName name1 = new LdapName(group1DN);
 
-            assertTrue("Erreur ! Groupe attendu " + GROUP_1_NAME, name1.equals(new LdapName(GROUP_1_NAME)));
+            assertTrue("Error ! expected group " + GROUP_1_NAME, name1.equals(new LdapName(GROUP_1_NAME)));
 
             // Cache Hit
             now = System.currentTimeMillis();

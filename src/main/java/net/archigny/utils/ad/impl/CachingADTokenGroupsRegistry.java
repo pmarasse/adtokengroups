@@ -2,6 +2,7 @@ package net.archigny.utils.ad.impl;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -62,7 +63,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
     /**
      * Method called to initialize the bean
      */
-    @Override
+    @PostConstruct
     public void afterPropertiesSet() {
 
         super.afterPropertiesSet();
