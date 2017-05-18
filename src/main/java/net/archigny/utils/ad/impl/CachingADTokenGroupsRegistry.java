@@ -63,13 +63,14 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
      * Method called to initialize the bean
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         super.afterPropertiesSet();
 
         if (cache == null) {
             log.info("Cache not provided, trying to get one.");
 
+            @SuppressWarnings("resource")
             CacheManager cm = Caching.getCachingProvider().getCacheManager();
             if ((cache = cm.getCache(CACHE_NAME, String.class, String.class)) == null) {
                 Factory<ExpiryPolicy> policyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(

@@ -6,7 +6,7 @@ import org.ldaptive.ConnectionFactory;
 import org.ldaptive.LdapException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanCreationException;
+
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 
 /**
@@ -29,11 +29,11 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
     protected Connection        ldapConnection;
 
     @PostConstruct
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         log.debug("Validating bean values");
         if (ldapConnectionFactory == null) {
-            throw new BeanCreationException("LDAP connection cannot be null !");
+            throw new IllegalStateException("LDAP connection cannot be null !");
         }
         log.debug("Validated with group search base : {}", baseDN);
 
