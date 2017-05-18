@@ -9,16 +9,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- Dépendances de compilation -->
-        <slf4j.version>1.6.4</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <jcache.version>1.0.0</jcache.version>
-		<ldaptive.version>1.2.0</ldaptive.version>
+		<ldaptive.version>1.2.1</ldaptive.version>
         
         <!-- Dépendances de tests -->
         <springframework.version>4.3.8.RELEASE</springframework.version>
-        <ehcache.version>3.2.0</ehcache.version>        
+        <ehcache.version>3.2.1</ehcache.version>        
         <junit.version>4.10</junit.version>
-        <commons.codec.version>1.6</commons.codec.version>
-        <commons.pool.version>1.5.4</commons.pool.version>
+        <commons.codec.version>1.10</commons.codec.version>
     </properties>
 
     <dependencies>
@@ -58,21 +57,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-            <version>${commons.pool.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${springframework.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ehcache</groupId>
