@@ -1,12 +1,11 @@
 package net.archigny.utils.ad.impl;
 
+import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.LdapTemplate;
 
@@ -18,7 +17,7 @@ import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
  * @author Philippe MARASSE
  *
  */
-public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryTokenGroupsRegistry, InitializingBean {
+public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryTokenGroupsRegistry {
 
     /**
      * logger for this class
@@ -40,12 +39,12 @@ public abstract class AbstractADTokenGroupsRegistry implements IActiveDirectoryT
      */
     protected LdapTemplate  ldapTemplate;
 
-    @Override
+    @PostConstruct
     public void afterPropertiesSet() throws Exception {
 
         log.debug("Validating bean values");
         if (ldapTemplate == null) {
-            throw new BeanCreationException("LDAP ContextSource cannot be null");
+            throw new IllegalStateException("LDAP ContextSource cannot be null");
         }
         log.debug("Validated with group search base : {}", baseDN);
         ldapTemplate.setIgnorePartialResultException(true);

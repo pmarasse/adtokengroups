@@ -2,13 +2,10 @@ package net.archigny.utils.ad.impl;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
-
-import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -18,25 +15,13 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.ExpiryPolicy;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.MXBean;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import org.apache.commons.codec.binary.Base64;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.support.LdapUtils;
 
@@ -156,7 +141,7 @@ public class CachingADTokenGroupsRegistryTest {
             log.info("Found group DN : {} (time : {} ms)", group1DN, (now2 - now));
             LdapName name1 = new LdapName(group1DN);
 
-            assertTrue(name1.equals(new LdapName(GROUP_1_NAME)));
+            assertTrue("Erreur ! Groupe attendu " + GROUP_1_NAME,name1.equals(new LdapName(GROUP_1_NAME)));
 
             // Cache Hit
             now = System.currentTimeMillis();

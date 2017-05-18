@@ -2,6 +2,7 @@ package net.archigny.utils.ad.impl;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PreDestroy;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
@@ -13,7 +14,6 @@ import javax.cache.expiry.ExpiryPolicy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.ldap.support.LdapUtils;
 
 /**
@@ -22,10 +22,10 @@ import org.springframework.ldap.support.LdapUtils;
  * @author Philippe MARASSE
  *
  */
-public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry implements DisposableBean {
+public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
 
     /** Logger */
-    private final Logger          log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
+    private static final Logger   log             = LoggerFactory.getLogger(CachingADTokenGroupsRegistry.class);
 
     /** Cache name used by all instances of Registry */
     public static final String    CACHE_NAME      = "net.archigny.utils.ad.impl.adtokengroupsregistry";
@@ -36,7 +36,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     /** Default time to live for elements : 86400s =&gt; 1 day */
     public static final long      DEFAULT_TTL     = 86400;
 
-    /** Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours  */
+    /** Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours */
     public static final long      DEFAULT_TTI     = 43200;
 
     /** Value used to specify null value caching as JSR107 does not allow this */
@@ -90,7 +90,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry im
     /**
      * Method that should be called before destroying references to this bean
      */
-    @Override
+    @PreDestroy
     public void destroy() {
 
         cache.close();

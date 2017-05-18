@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.naming.InvalidNameException;
 import javax.naming.directory.SearchControls;
+import javax.naming.ldap.LdapName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +25,14 @@ import org.springframework.ldap.support.LdapUtils;
  */
 public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
-    private final Logger            log               = LoggerFactory.getLogger(SimpleADTokenGroupsRegistry.class);
+    private final static Logger     log               = LoggerFactory.getLogger(SimpleADTokenGroupsRegistry.class);
 
     protected final static Pattern  QUERY_PLACEHOLDER = Pattern.compile("\\{0\\}");
 
     protected final static String   QUERY_SID         = "(objectSid={0})";
 
     protected final static String[] QUERY_ATTRS       = { "cn" };
-    
+
     protected final String escapeOctetString(final byte[] octetString) {
 
         final StringBuilder sb = new StringBuilder(octetString.length * 3);
@@ -85,7 +86,7 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             return null;
         }
     }
-    
+
     /**
      * A simple ContextMapper to only fetch DN of result objects.
      * 
@@ -93,6 +94,8 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
      */
     protected class DnFetcher implements ContextMapper {
 
+        private final Logger log = LoggerFactory.getLogger(DnFetcher.class);
+        
         @Override
         public Object mapFromContext(Object ctx) {
 
@@ -102,10 +105,10 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
             }
 
             if (contextSourceBaseDN == null) {
-            	return context.getDn().toString();
+                return context.getDn().toString();
             }
-            
-            final DistinguishedName dn = new DistinguishedName(contextSourceBaseDN);
+
+            final LdapName dn = (LdapName) contextSourceBaseDN.clone();
 
             if (dn.isEmpty()) {
                 return context.getDn().toString();

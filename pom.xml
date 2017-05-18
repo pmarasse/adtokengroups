@@ -9,12 +9,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- Dépendances de compilation -->
-        <springldap.version>1.3.1.RELEASE</springldap.version>
+        <springldap.version>2.3.1.RELEASE</springldap.version>
         <slf4j.version>1.6.4</slf4j.version>
         <jcache.version>1.0.0</jcache.version>
         
         <!-- Dépendances de tests -->
-        <springframework.version>3.1.2.RELEASE</springframework.version>
+        <springframework.version>4.3.8.RELEASE</springframework.version>
         <ehcache.version>3.2.0</ehcache.version>        
         <junit.version>4.10</junit.version>
         <commons.codec.version>1.6</commons.codec.version>
@@ -27,10 +27,24 @@
 			<groupId>javax.cache</groupId>
 			<artifactId>cache-api</artifactId>
 			<version>${jcache.version}</version>
-			<scope>compile</scope>
 		</dependency>
-    	
-    
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+            <version>${springldap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core-tiger</artifactId>
+            <version>${springldap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        
+		<!-- Dépendances pour les tests -->    	    
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -55,30 +69,12 @@
             <version>${springframework.version}</version>
             <scope>test</scope>
         </dependency>
-        
-        
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core</artifactId>
-            <version>${springldap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core-tiger</artifactId>
-            <version>${springldap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
             <scope>test</scope>
-        </dependency>
-        
+        </dependency>        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
