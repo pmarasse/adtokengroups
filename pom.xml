@@ -9,11 +9,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
         <!-- Dépendances de compilation -->
-        <springldap.version>2.3.1.RELEASE</springldap.version>
         <slf4j.version>1.6.4</slf4j.version>
-        <springframework.version>3.1.2.RELEASE</springframework.version>
-        <ehcache.version>2.5.2</ehcache.version>
-
+        <jcache.version>1.0.0</jcache.version>
 		<ldaptive.version>1.2.0</ldaptive.version>
         
         <!-- Dépendances de tests -->
@@ -32,19 +29,19 @@
 			<version>${jcache.version}</version>
 		</dependency>
         <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core</artifactId>
-            <version>${springldap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core-tiger</artifactId>
-            <version>${springldap.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ldaptive</groupId>
+            <artifactId>ldaptive</artifactId>
+            <version>${ldaptive.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ldaptive</groupId>
+            <artifactId>ldaptive-unboundid</artifactId>
+            <version>${ldaptive.version}</version>
         </dependency>
         
 		<!-- Dépendances pour les tests -->    	    
@@ -71,27 +68,6 @@
             <artifactId>spring-context</artifactId>
             <version>${springframework.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.ldaptive</groupId>
-            <artifactId>ldaptive</artifactId>
-            <version>${ldaptive.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ldaptive</groupId>
-            <artifactId>ldaptive-unboundid</artifactId>
-            <version>${ldaptive.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core</artifactId>
-            <version>${springldap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core-tiger</artifactId>
-            <version>${springldap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

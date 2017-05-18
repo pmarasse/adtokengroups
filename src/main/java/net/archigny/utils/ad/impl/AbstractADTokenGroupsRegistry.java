@@ -1,16 +1,12 @@
 package net.archigny.utils.ad.impl;
 
 import javax.annotation.PostConstruct;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-
 import org.ldaptive.Connection;
 import org.ldaptive.ConnectionFactory;
 import org.ldaptive.LdapException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.InitializingBean;
 import net.archigny.utils.ad.api.IActiveDirectoryTokenGroupsRegistry;
 
 /**

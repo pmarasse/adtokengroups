@@ -14,7 +14,6 @@ import javax.cache.expiry.ExpiryPolicy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.support.LdapUtils;
 
 /**
  * Implementation of token group registry using EhCache in order to light the burden of active directory

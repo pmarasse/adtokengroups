@@ -2,6 +2,7 @@ package net.archigny.utils.ad.impl;
 
 import static org.junit.Assert.*;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.InvalidNameException;
@@ -13,24 +14,33 @@ import javax.cache.Caching;
 import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
-import javax.cache.expiry.Duration;
 import javax.cache.expiry.ExpiryPolicy;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.ldaptive.BindOperation;
+import org.ldaptive.BindRequest;
+import org.ldaptive.Connection;
+import org.ldaptive.ConnectionConfig;
+import org.ldaptive.ConnectionFactory;
+import org.ldaptive.ConnectionInitializer;
+import org.ldaptive.Credential;
+import org.ldaptive.DefaultConnectionFactory;
+import org.ldaptive.LdapException;
+import org.ldaptive.Response;
+import org.ldaptive.provider.unboundid.UnboundIDProvider;
+import org.ldaptive.provider.unboundid.UnboundIDProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.core.support.LdapContextSource;
-import org.springframework.ldap.support.LdapUtils;
 
-public class CachingADTokenGroupsRegistryTest {
+import com.unboundid.ldap.sdk.LDAPConnectionOptions;
+
+public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
     /** Logger */
     public final Logger                  log                = LoggerFactory.getLogger(CachingADTokenGroupsRegistryTest.class);
-
-    public static LdapContextSource      cs;
 
     public final static String           BASE_DN            = "dc=TEST,dc=CH-POITIERS,dc=FR";
 
@@ -39,6 +49,8 @@ public class CachingADTokenGroupsRegistryTest {
     public final static String           BIND_PW            = "qdsFpRq9GFZ9e7pD";
 
     public final static String           SERVER_URL         = "ldap://ad2012test.ch-poitiers.fr";
+
+    public final static BindRequest      LDAP_BIND          = new BindRequest(BIND_DN, new Credential(BIND_PW));
 
     /* Token list taken from ldap search : ldapsearch -x -D "bindDN" -w bindPW -H ldap://ad2012test.ch-poitiers.fr -b
      * "CN=Cathelyn Stark,OU=Utilisateurs,DC=TEST,DC=CH-POITIERS,DC=FR" -s base tokenGroups */
@@ -77,7 +89,11 @@ public class CachingADTokenGroupsRegistryTest {
     public final static String           GROUP_7_NAME       = "cn=Tully,ou=Groupes," + BASE_DN;
 
     /** non existent token */
-    public final static byte[]           NON_EXISTENT_TOKEN = LdapUtils.convertStringSidToBinary("S-1-5-21-4134179593-3124312333-3049290520-513");
+    public final static byte[]           NON_EXISTENT_TOKEN = LdapUtils
+            .convertStringSidToBinary("S-1-5-21-4134179593-3124312333-3049290520-513");
+
+    /** LDAP Connection factory */
+    public static ConnectionFactory      ldapConnectionFactory;
 
     private static CacheManager          cm;
 
@@ -90,7 +106,7 @@ public class CachingADTokenGroupsRegistryTest {
         MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
                 String.class);
         config.setExpiryPolicyFactory(new FactoryBuilder.SingletonFactory<ExpiryPolicy>(new CreatedExpiryPolicy(
-                new Duration(TimeUnit.SECONDS, 86400))));
+                new javax.cache.expiry.Duration(TimeUnit.SECONDS, 86400))));
         config.setStoreByValue(false);
 
         cache = cm.createCache(CachingADTokenGroupsRegistry.CACHE_NAME, config);
@@ -101,16 +117,21 @@ public class CachingADTokenGroupsRegistryTest {
     @Before
     public void setUp() throws Exception {
 
-        if (cs == null) {
-            log.info("Create an instance of LdapContextSource");
-            cs = new LdapContextSource();
-            cs.setBase(BASE_DN);
-            cs.setPooled(false);
-            cs.setUserDn(BIND_DN);
-            cs.setPassword(BIND_PW);
-            cs.setUrl(SERVER_URL);
-            cs.afterPropertiesSet();
-        }
+        LDAPConnectionOptions lco = new LDAPConnectionOptions();
+        lco.setAbandonOnTimeout(true);
+
+        UnboundIDProviderConfig lpc = new UnboundIDProviderConfig();
+        lpc.setConnectionOptions(lco);
+
+        UnboundIDProvider lp = new UnboundIDProvider();
+        lp.setProviderConfig(lpc);
+
+        ConnectionConfig cc = new ConnectionConfig(SERVER_URL);
+        cc.setConnectTimeout(Duration.ofMillis(3000L));
+        cc.setResponseTimeout(Duration.ofMillis(30000L));
+        cc.setConnectionInitializer(this);
+
+        ldapConnectionFactory = new DefaultConnectionFactory(cc, lp);
 
     }
 
@@ -125,10 +146,10 @@ public class CachingADTokenGroupsRegistryTest {
     public void getDNFromTokenTest() throws Exception {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
-        tokenRegistry.setContextSource(cs);
-        tokenRegistry.setContextSourceBaseDN(BASE_DN);
+        tokenRegistry.setBaseDN(BASE_DN);
         tokenRegistry.afterPropertiesSet();
 
         try {
@@ -141,7 +162,7 @@ public class CachingADTokenGroupsRegistryTest {
             log.info("Found group DN : {} (time : {} ms)", group1DN, (now2 - now));
             LdapName name1 = new LdapName(group1DN);
 
-            assertTrue("Erreur ! Groupe attendu " + GROUP_1_NAME,name1.equals(new LdapName(GROUP_1_NAME)));
+            assertTrue("Erreur ! Groupe attendu " + GROUP_1_NAME, name1.equals(new LdapName(GROUP_1_NAME)));
 
             // Cache Hit
             now = System.currentTimeMillis();
@@ -208,30 +229,28 @@ public class CachingADTokenGroupsRegistryTest {
         // Test that fails on version 0.1.0
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
-        tokenRegistry.setContextSource(cs);
         tokenRegistry.setBaseDN("");
         tokenRegistry.afterPropertiesSet();
 
-        @SuppressWarnings("unused")
         CachingADTokenGroupsRegistry tokenRegistry2 = new CachingADTokenGroupsRegistry();
-        tokenRegistry.setMaxElements(3);
-        tokenRegistry.setTimeToLive(1); // 1 seconde.
-        tokenRegistry.setContextSource(cs);
-        tokenRegistry.setBaseDN("");
-        tokenRegistry.afterPropertiesSet();
-
+        tokenRegistry2.setLdapConnectionFactory(ldapConnectionFactory);
+        tokenRegistry2.setMaxElements(3);
+        tokenRegistry2.setTimeToLive(1); // 1 seconde.
+        tokenRegistry2.setBaseDN("");
+        tokenRegistry2.afterPropertiesSet();
     }
 
     @Test
     public void cacheNullTest() throws Exception {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
+        tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
-        tokenRegistry.setContextSource(cs);
-        tokenRegistry.setBaseDN("ou=Utilisateurs");
+        tokenRegistry.setBaseDN(BASE_DN);
         tokenRegistry.afterPropertiesSet();
         tokenRegistry.setCacheNullValues(true);
 
@@ -253,6 +272,16 @@ public class CachingADTokenGroupsRegistryTest {
 
         assertNull("Expected NULL, found : " + group1DN, group1DN);
 
+    }
+
+    @Override
+    public Response<Void> initialize(Connection conn) throws LdapException {
+
+        BindOperation bind = new BindOperation(conn);
+        bind.execute(LDAP_BIND);
+
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
