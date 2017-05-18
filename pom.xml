@@ -16,7 +16,7 @@
         <!-- Dépendances de tests -->
         <springframework.version>4.3.8.RELEASE</springframework.version>
         <ehcache.version>3.2.1</ehcache.version>        
-        <junit.version>4.10</junit.version>
+        <junit.version>4.12</junit.version>
         <commons.codec.version>1.10</commons.codec.version>
     </properties>
 
