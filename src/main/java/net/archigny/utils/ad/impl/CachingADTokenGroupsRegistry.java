@@ -12,6 +12,7 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.ExpiryPolicy;
 
+import org.ldaptive.ad.SecurityIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +113,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
         String sid;
 
         try {
-            sid = LdapUtils.convertBinarySidToString(tokenGroup);
+            sid = SecurityIdentifier.toString(tokenGroup);
         } catch (Exception e) {
             log.error("An invalid SID has been passed as tokenGroup : {}", LdapUtils.toHexString(tokenGroup));
             // non parseable SID => will not attempt to contact LDAP directory

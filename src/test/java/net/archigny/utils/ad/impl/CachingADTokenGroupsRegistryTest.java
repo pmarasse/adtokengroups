@@ -30,6 +30,7 @@ import org.ldaptive.Credential;
 import org.ldaptive.DefaultConnectionFactory;
 import org.ldaptive.LdapException;
 import org.ldaptive.Response;
+import org.ldaptive.ad.SecurityIdentifier;
 import org.ldaptive.provider.unboundid.UnboundIDProvider;
 import org.ldaptive.provider.unboundid.UnboundIDProviderConfig;
 import org.slf4j.Logger;
@@ -89,8 +90,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
     public final static String           GROUP_7_NAME       = "cn=Tully,ou=Groupes," + BASE_DN;
 
     /** non existent token */
-    public final static byte[]           NON_EXISTENT_TOKEN = LdapUtils
-            .convertStringSidToBinary("S-1-5-21-4134179593-3124312333-3049290520-513");
+    public final static byte[]           NON_EXISTENT_TOKEN = SecurityIdentifier.toBytes("S-1-5-21-4134179593-3124312333-3049290520-513");
 
     /** LDAP Connection factory */
     public static ConnectionFactory      ldapConnectionFactory;
@@ -177,7 +177,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
         try {
 
             // Cache Miss
-            log.info("Resolving first token : {}", LdapUtils.convertBinarySidToString(TOKEN_1));
+            log.info("Resolving first token : {}", SecurityIdentifier.toString(TOKEN_1));
             long now = System.currentTimeMillis();
             String group1DN = tokenRegistry.getDnFromToken(TOKEN_1);
             long now2 = System.currentTimeMillis();
@@ -194,7 +194,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
             log.info("Second fetch time : " + (now2 - now) + " ms.");
 
             // Cache Miss
-            log.info("Resolving second token : {}", LdapUtils.convertBinarySidToString(TOKEN_2));
+            log.info("Resolving second token : {}", SecurityIdentifier.toString(TOKEN_2));
             now = System.currentTimeMillis();
             String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
             now2 = System.currentTimeMillis();
@@ -204,7 +204,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
             assertTrue(name2.equals(new LdapName(GROUP_2_NAME)));
 
             // Cache Miss
-            log.info("Resolving third token : " + LdapUtils.convertBinarySidToString(TOKEN_3));
+            log.info("Resolving third token : " + SecurityIdentifier.toString(TOKEN_3));
             String group3DN = tokenRegistry.getDnFromToken(TOKEN_3);
             log.info("Found 3rd group DN " + group3DN);
             LdapName name3 = new LdapName(group3DN);
@@ -212,7 +212,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
             assertTrue(name3.equals(new LdapName(GROUP_3_NAME)));
 
             // Cache Miss + eviction
-            log.info("Resolving fourth token : " + LdapUtils.convertBinarySidToString(TOKEN_4));
+            log.info("Resolving fourth token : " + SecurityIdentifier.toString(TOKEN_4));
             String group4DN = tokenRegistry.getDnFromToken(TOKEN_4);
             log.info("Found 4th group DN " + group4DN);
             LdapName name4 = new LdapName(group4DN);
@@ -220,7 +220,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
             assertTrue(name4.equals(new LdapName(GROUP_4_NAME)));
 
             // Cache Miss + eviction
-            log.info("Resolving fifth token : " + LdapUtils.convertBinarySidToString(TOKEN_5));
+            log.info("Resolving fifth token : " + SecurityIdentifier.toString(TOKEN_5));
             String group5DN = tokenRegistry.getDnFromToken(TOKEN_5);
             log.info("Found 5th group DN " + group5DN);
             LdapName name5 = new LdapName(group5DN);
@@ -288,7 +288,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
         Thread.sleep(2000);
 
         // Cache Miss
-        log.info("Resolving unknown token : {}", LdapUtils.convertBinarySidToString(NON_EXISTENT_TOKEN));
+        log.info("Resolving unknown token : {}", SecurityIdentifier.toString(NON_EXISTENT_TOKEN));
         long now = System.currentTimeMillis();
         String group1DN = tokenRegistry.getDnFromToken(NON_EXISTENT_TOKEN);
         long now2 = System.currentTimeMillis();

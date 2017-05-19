@@ -7,6 +7,7 @@ import javax.naming.ldap.LdapName;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
+import org.ldaptive.ad.SecurityIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -35,7 +36,7 @@ public class CachingWithSpringTest {
         String baseDN = ctx.getBean("ActiveDirectoryBaseDN", String.class);
         String groupName = GROUP_2_PREFIX + baseDN;
 
-        log.info("Resolving token : {}", LdapUtils.convertBinarySidToString(TOKEN_2));
+        log.info("Resolving token : {}", SecurityIdentifier.toString(TOKEN_2));
         String group2DN = tokenRegistry.getDnFromToken(TOKEN_2);
         LdapName name2 = new LdapName(group2DN);
 

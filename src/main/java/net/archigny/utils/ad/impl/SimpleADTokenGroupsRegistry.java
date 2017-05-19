@@ -32,22 +32,6 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
     /** LDAP Attribute to retrieve */
     protected final static String[] QUERY_ATTRS       = { "cn" };
 
-    /**
-     * Converts octetString to escaped string for use within a LDAP filter
-     * 
-     * @param octetString
-     *            octet string to escape
-     * @return converted value
-     */
-    protected final String escapeOctetString(final byte[] octetString) {
-
-        final StringBuilder sb = new StringBuilder(octetString.length * 3);
-        for (byte b : octetString) {
-            sb.append(String.format("\\%02x", b));
-        }
-        return sb.toString();
-    }
-
     @Override
     public String getDnFromToken(final String tokenGroup) {
 
@@ -56,10 +40,6 @@ public class SimpleADTokenGroupsRegistry extends AbstractADTokenGroupsRegistry {
 
     @Override
     public String getDnFromToken(final byte[] tokenGroup) {
-
-        // final Matcher queryMatcher = QUERY_PLACEHOLDER.matcher(QUERY_SID);
-
-        // final String localFilter = MessageFormat.format(QUERY_SID, escapeOctetString(tokenGroup));
 
         final SearchFilter localFilter = new SearchFilter(QUERY_SID);
         localFilter.setParameter("sid", tokenGroup);
