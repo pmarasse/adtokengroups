@@ -38,11 +38,6 @@
             <artifactId>ldaptive</artifactId>
             <version>${ldaptive.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.ldaptive</groupId>
-            <artifactId>ldaptive-unboundid</artifactId>
-            <version>${ldaptive.version}</version>
-        </dependency>
         
 		<!-- Dépendances pour les tests -->    	    
         <dependency>
@@ -61,6 +56,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${springframework.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ldaptive</groupId>
+            <artifactId>ldaptive-unboundid</artifactId>
+            <version>${ldaptive.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
