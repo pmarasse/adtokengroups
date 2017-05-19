@@ -81,9 +81,8 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
                 log.info("Using provided cache manager.");
             }
             if ((cache = cacheManager.getCache(CACHE_NAME, String.class, String.class)) == null) {
-                Factory<ExpiryPolicy> policyFactory = new FactoryBuilder.SingletonFactory<ExpiryPolicy>(
-                        new CreatedAccessedExpiryPolicy(
-                                new Duration(TimeUnit.SECONDS, timeToLive), new Duration(TimeUnit.SECONDS, timeToIdle)));
+                Factory<ExpiryPolicy> policyFactory = CreatedAccessedExpiryPolicy.factoryOf(
+                        new Duration(TimeUnit.SECONDS, timeToLive), new Duration(TimeUnit.SECONDS, timeToIdle));
 
                 MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
                         String.class).setExpiryPolicyFactory(policyFactory);
