@@ -169,7 +169,6 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
-        tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN(BASE_DN);
         tokenRegistry.setCache(cache);
@@ -253,7 +252,6 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
-        tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN("");
         tokenRegistry.setCache(hazelCache);
@@ -261,7 +259,6 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
         CachingADTokenGroupsRegistry tokenRegistry2 = new CachingADTokenGroupsRegistry();
         tokenRegistry2.setLdapConnectionFactory(ldapConnectionFactory);
-        tokenRegistry2.setMaxElements(3);
         tokenRegistry2.setTimeToLive(1); // 1 seconde.
         tokenRegistry2.setBaseDN("");
         tokenRegistry2.setCache(hazelCache);
@@ -282,7 +279,6 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
-        tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN(BASE_DN);
         tokenRegistry.setCache(cache);

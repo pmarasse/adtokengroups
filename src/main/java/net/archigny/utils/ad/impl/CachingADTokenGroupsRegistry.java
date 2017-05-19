@@ -36,7 +36,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
     /** Default time to live for elements : 86400s =&gt; 1 day */
     public static final long      DEFAULT_TTL          = 86400;
 
-    /** Default time to idle (maximum time between hits) for elements : 43200 =&gt; 12 hours */
+    /** Default time to idle (maximum time between hits) for elements : 43200s =&gt; 12 hours */
     public static final long      DEFAULT_TTI          = 43200;
 
     /** Value used to specify null value caching as JSR107 does not allow this */
@@ -47,9 +47,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
 
     /** CacheManager to use during initialization */
     private CacheManager          cacheManager;
-
-    /** Number of cached elements */
-    private int                   maxElements          = MAX_ELEMENTS;
 
     /** Time to live for elements (seconds) */
     private long                  timeToLive           = DEFAULT_TTL;
@@ -163,16 +160,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
     }
 
     // Getters and Setters
-
-    public int getMaxElements() {
-
-        return maxElements;
-    }
-
-    public void setMaxElements(int maxElements) {
-
-        this.maxElements = maxElements;
-    }
 
     public long getTimeToLive() {
 

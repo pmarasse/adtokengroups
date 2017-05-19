@@ -71,7 +71,6 @@
 		p:ldapConnectionFactory-ref="ActiveDirectoryLdapConnectionFactory"
 		p:baseDN-ref="ActiveDirectoryBaseDN"
 		p:cacheManager-ref="cacheManager"
-		p:maxElements="10"
 		p:timeToLive="86400" 
 		p:timeToIdle="36000" />
 

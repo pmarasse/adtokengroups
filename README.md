@@ -8,8 +8,9 @@ The main implementation uses JCache API (tested with EhCache implementation) to 
 Dependencies
 ------------
 
-* Spring LDAP 2.3.x
-* JCache 1.0.0
+  * Ldaptive 1.2
+  * JCache 1.0.0
+  * slf4j API 1.7
 
 Changelog
 =========
@@ -17,17 +18,19 @@ Changelog
 Version 1.0.0-SNAP
 ------------------
 
-* Drop EhCache dependency in favor of JCache API
-* Updated Spring LDAP 1.3 to 2.3
-* Updated EhCache 2.5 to JCache 1.0.0
+  * Updated dependency from Spring LDAP 1.3 to Ldaptive 1.2
+  * Updated dependency from EhCache 2.5 to JCache 1.0.0
+  * Tests with both EhCache 3.2 and HazelCast 3.8 implementations
+  * Test with Spring Framework 4.3
+  * Updated API of CachingADTokenGroupsRegistry a cache manager or cache instance can be provided
 
 Version 0.1.4
 -------------
 
-* Added a setter to be more kind with spring IoC
+  * Added a setter to be more kind with spring IoC
 
 Version 0.1.3
 -------------
 
-* First fully usable version with stabilized interface
+  * First fully usable version with stabilized interface
 
