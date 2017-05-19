@@ -16,10 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of token group registry using EhCache in order to light the burden of active directory
+ * Implementation of token group registry using JCache in order to light the burden of active directory
  * 
  * @author Philippe MARASSE
- *
  */
 public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
 
@@ -41,13 +40,13 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
     /** Value used to specify null value caching as JSR107 does not allow this */
     public static final String    NULL                 = "";
 
-    /** JCache cache <SID (String), DN (String>> */
+    /** JCache {@link Cache} <SID (String), DN (String)> */
     private Cache<String, String> cache;
 
-    /** CacheManager to use during initialization */
+    /** { @link CacheManager} to use during initialization */
     private CacheManager          cacheManager;
 
-    /** Time to live for elements (seconds) */
+    /** Time to Live for elements (seconds) */
     private long                  timeToLive           = DEFAULT_TTL;
 
     /** Time to Idle for elements (maximum seconds between accesses) */
@@ -108,12 +107,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
     }
 
     @Override
-    public String getDnFromToken(final String tokenGroup) {
-
-        return getDnFromToken(tokenGroup.getBytes());
-    }
-
-    @Override
     public String getDnFromToken(final byte[] tokenGroup) {
 
         String sid;
@@ -121,7 +114,7 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
         try {
             sid = LdapUtils.convertBinarySidToString(tokenGroup);
         } catch (Exception e) {
-            log.error("An invalid SID has been passed as tokenGroup : {}", toHexString(tokenGroup));
+            log.error("An invalid SID has been passed as tokenGroup : {}", LdapUtils.toHexString(tokenGroup));
             // non parseable SID => will not attempt to contact LDAP directory
             return null;
         }
@@ -146,15 +139,6 @@ public class CachingADTokenGroupsRegistry extends SimpleADTokenGroupsRegistry {
 
         return groupDN;
 
-    }
-
-    private final String toHexString(final byte[] bytes) {
-
-        StringBuilder sb = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 
     // Getters and Setters

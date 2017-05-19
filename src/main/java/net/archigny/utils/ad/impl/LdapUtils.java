@@ -1,18 +1,13 @@
-/*
- * Copyright 2005-2013 the original author or authors.
+/* Copyright 2005-2013 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License. */
 
 package net.archigny.utils.ad.impl;
 
@@ -20,24 +15,21 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
- * Generic utility methods for working with LDAP. Mainly for internal use within
- * the framework, but also useful for custom code. Taken from Spring LDAP package
+ * Generic utility methods for working with LDAP. Mainly for internal use within the framework, but also useful for custom code.
+ * Taken from Spring LDAP package
  * 
  * @author Ulrik Sandberg
  * @author Mattias Hellborg Arthursson
  * @since 1.0.0
  */
 public class LdapUtils {
-    
+
     private static final int HEX = 16;
 
     /**
-     * Converts a binary SID to its String representation, according to the
-     * algorithm described <a
-     * href="http://blogs.msdn.com/oldnewthing/archive/2004/03/15/89753.aspx"
-     * >here</a>. Thanks to <a href=
-     * "http://www.jroller.com/eyallupu/entry/java_jndi_how_to_convert">Eyal
-     * Lupu</a> for algorithmic inspiration.
+     * Converts a binary SID to its String representation, according to the algorithm described
+     * <a href="http://blogs.msdn.com/oldnewthing/archive/2004/03/15/89753.aspx" >here</a>. Thanks to
+     * <a href= "http://www.jroller.com/eyallupu/entry/java_jndi_how_to_convert">Eyal Lupu</a> for algorithmic inspiration.
      * 
      * <pre>
      * If you have a SID like S-a-b-c-d-e-f-g-...
@@ -73,11 +65,13 @@ public class LdapUtils {
      * 72713    unique user id on the machine
      * </pre>
      * 
-     * @param sid binary SID in byte array format
+     * @param sid
+     *            binary SID in byte array format
      * @return String version of the given sid
      * @since 1.3.1
      */
     public static String convertBinarySidToString(byte[] sid) {
+
         // Add the 'S' prefix
         StringBuffer sidAsString = new StringBuffer("S-");
 
@@ -112,39 +106,40 @@ public class LdapUtils {
         // That's it - we have the SID
         return sidAsString.toString();
     }
-    
+
     /**
-     * Converts a String SID to its binary representation, according to the
-     * algorithm described <a
-     * href="http://blogs.msdn.com/oldnewthing/archive/2004/03/15/89753.aspx"
-     * >here</a>. 
+     * Converts a String SID to its binary representation, according to the algorithm described
+     * <a href="http://blogs.msdn.com/oldnewthing/archive/2004/03/15/89753.aspx" >here</a>.
      * 
-     * @param string SID in readable format
+     * @param string
+     *            SID in readable format
      * @return Binary version of the given sid
      * @see LdapUtils#convertBinarySidToString(byte[])
      * @since 1.3.1
      */
     public static byte[] convertStringSidToBinary(String string) {
+
         String[] parts = string.split("-");
         byte sidRevision = (byte) Integer.parseInt(parts[1]);
         int subAuthCount = parts.length - 3;
 
-        byte[] sid = new byte[] {sidRevision, (byte) subAuthCount};
+        byte[] sid = new byte[] { sidRevision, (byte) subAuthCount };
         sid = addAll(sid, numberToBytes(parts[2], 6, true));
         for (int i = 0; i < subAuthCount; i++) {
             sid = addAll(sid, numberToBytes(parts[3 + i], 4, false));
         }
         return sid;
     }
-    
+
     /**
-     * Converts a byte into its hexadecimal representation, padding with a
-     * leading zero to get an even number of characters.
+     * Converts a byte into its hexadecimal representation, padding with a leading zero to get an even number of characters.
      * 
-     * @param b value to convert
+     * @param b
+     *            value to convert
      * @return hex string, possibly padded with a zero
      */
-    static String toHexString(final byte b) {
+    public static String toHexString(final byte b) {
+
         String hexString = Integer.toHexString(b & 0xFF);
         if (hexString.length() % 2 != 0) {
             // Pad with 0
@@ -154,16 +149,34 @@ public class LdapUtils {
     }
 
     /**
-     * Converts the given number to a binary representation of the specified
-     * length and "endian-ness".
+     * Converts a byte array into its hexadecimal representation
      * 
-     * @param number String with number to convert
-     * @param length How long the resulting binary array should be
-     * @param bigEndian <code>true</code> if big endian (5=0005), or
-     * <code>false</code> if little endian (5=5000)
+     * @param bytes
+     *            Byte array to convert
+     * @return hexadecimal representation as a String
+     */
+    public static final String toHexString(final byte[] bytes) {
+
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts the given number to a binary representation of the specified length and "endian-ness".
+     * 
+     * @param number
+     *            String with number to convert
+     * @param length
+     *            How long the resulting binary array should be
+     * @param bigEndian
+     *            <code>true</code> if big endian (5=0005), or <code>false</code> if little endian (5=5000)
      * @return byte array containing the binary result in the given order
      */
-    static byte[] numberToBytes(String number, int length, boolean bigEndian) {
+    public static byte[] numberToBytes(String number, int length, boolean bigEndian) {
+
         BigInteger bi = new BigInteger(number);
         byte[] bytes = bi.toByteArray();
         int remaining = length - bytes.length;
@@ -180,6 +193,7 @@ public class LdapUtils {
     }
 
     private static byte[] addAll(byte[] array1, byte[] array2) {
+
         byte[] joinedArray = new byte[array1.length + array2.length];
         System.arraycopy(array1, 0, joinedArray, 0, array1.length);
         System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
@@ -187,6 +201,7 @@ public class LdapUtils {
     }
 
     private static void reverse(byte[] array) {
+
         int i = 0;
         int j = array.length - 1;
         byte tmp;
@@ -198,6 +213,5 @@ public class LdapUtils {
             i++;
         }
     }
-
 
 }
