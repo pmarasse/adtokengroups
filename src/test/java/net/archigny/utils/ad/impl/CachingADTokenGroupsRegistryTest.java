@@ -95,23 +95,36 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
     /** LDAP Connection factory */
     public static ConnectionFactory      ldapConnectionFactory;
 
-    private static CacheManager          cm;
+    /** HazelCast JCache Manager */
+    private static CacheManager          hazelCm;
 
-    private static Cache<String, String> cache;
+    /** HazelCast JCache */
+    private static Cache<String, String> hazelCache;
+
+    /** EhCache JCache Manager */  
+    private static CacheManager          ehCm;
+
+    /** EhCache JCache */
+    private static Cache<String, String> ehCache;
 
     @BeforeClass
     public static void prepare() {
 
-        cm = Caching.getCachingProvider().getCacheManager();
+        hazelCm = Caching.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider").getCacheManager();
         MutableConfiguration<String, String> config = new MutableConfiguration<String, String>().setTypes(String.class,
                 String.class);
         config.setExpiryPolicyFactory(new FactoryBuilder.SingletonFactory<ExpiryPolicy>(new CreatedExpiryPolicy(
                 new javax.cache.expiry.Duration(TimeUnit.SECONDS, 86400))));
         config.setStoreByValue(false);
 
-        cache = cm.createCache(CachingADTokenGroupsRegistry.CACHE_NAME, config);
-        cm.enableStatistics(CachingADTokenGroupsRegistry.CACHE_NAME, true);
+        hazelCache = hazelCm.createCache(CachingADTokenGroupsRegistry.CACHE_NAME, config);
+        hazelCm.enableStatistics(CachingADTokenGroupsRegistry.CACHE_NAME, true);
 
+        // FQDN is in file javax.cache.spi.CachingProvider in META-INF/services of each JSR107 cache provider
+        // Thanks to https://dzone.com/articles/random-jcache-stuff-multiple-providers-and-jmx-bea
+        ehCm = Caching.getCachingProvider("org.ehcache.jsr107.EhcacheCachingProvider").getCacheManager();
+        ehCache = ehCm.createCache(CachingADTokenGroupsRegistry.CACHE_NAME, config);
+        
     }
 
     @Before
@@ -138,18 +151,28 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
     @AfterClass
     public static void tearDown() {
 
-        cache.close();
-        cm.close();
+        hazelCache.close();
+        hazelCm.close();
     }
 
     @Test
-    public void getDNFromTokenTest() throws Exception {
+    public void getDNFromTokenWithHazelCast() throws Exception {
+        getDNFromTokenTest(hazelCache);
+    }
+    
+    @Test
+    public void getDNFromTokenWithEhCache() throws Exception {
+        getDNFromTokenTest(ehCache);
+    }
+        
+    public void getDNFromTokenTest(Cache<String,String> cache) throws Exception {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN(BASE_DN);
+        tokenRegistry.setCache(cache);
         tokenRegistry.afterPropertiesSet();
 
         try {
@@ -233,6 +256,7 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN("");
+        tokenRegistry.setCache(hazelCache);
         tokenRegistry.afterPropertiesSet();
 
         CachingADTokenGroupsRegistry tokenRegistry2 = new CachingADTokenGroupsRegistry();
@@ -240,19 +264,30 @@ public class CachingADTokenGroupsRegistryTest implements ConnectionInitializer {
         tokenRegistry2.setMaxElements(3);
         tokenRegistry2.setTimeToLive(1); // 1 seconde.
         tokenRegistry2.setBaseDN("");
+        tokenRegistry2.setCache(hazelCache);
         tokenRegistry2.afterPropertiesSet();
     }
 
     @Test
-    public void cacheNullTest() throws Exception {
+    public void cacheNullWithHazelCastTest() throws Exception {
+        cacheNullTest(hazelCache);
+    }
+    
+    @Test
+    public void cacheNullWithEhCacheTest() throws Exception {
+        cacheNullTest(ehCache);
+    }
+    
+    public void cacheNullTest(Cache<String,String> cache) throws Exception {
 
         CachingADTokenGroupsRegistry tokenRegistry = new CachingADTokenGroupsRegistry();
         tokenRegistry.setLdapConnectionFactory(ldapConnectionFactory);
         tokenRegistry.setMaxElements(3);
         tokenRegistry.setTimeToLive(1); // 1 seconde.
         tokenRegistry.setBaseDN(BASE_DN);
-        tokenRegistry.afterPropertiesSet();
+        tokenRegistry.setCache(cache);
         tokenRegistry.setCacheNullValues(true);
+        tokenRegistry.afterPropertiesSet();
 
         Thread.sleep(2000);
 
